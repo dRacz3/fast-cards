@@ -1,9 +1,22 @@
-from pydantic import BaseModel, Field  # pylint: disable=no-name-in-module
+from typing import List
+
+from pydantic import BaseModel
+
+from src.database.schema import Item
 
 
-class User(BaseModel):
-    id_name: str
-    description: str
-    official: bool = False
-    name: str
-    icon: str
+class UserBase(BaseModel):
+    email: str
+
+
+class UserCreate(UserBase):
+    password: str
+
+
+class User(UserBase):
+    id: int
+    is_active: bool
+    items: List[Item] = []
+
+    class Config:
+        orm_mode = True
