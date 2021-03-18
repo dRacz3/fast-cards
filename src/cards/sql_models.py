@@ -1,6 +1,6 @@
 from sqlalchemy import Column, Integer, String, Boolean
 
-from cards_server.database.database import Base
+from src.database.database import Base
 
 
 class WhiteCard(Base):

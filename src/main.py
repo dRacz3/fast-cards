@@ -2,10 +2,10 @@ import uvicorn
 from fastapi import Depends, FastAPI
 
 
-from cards_server.database import crud, sql_models, schema
-from cards_server.database.database import engine
-from cards_server.dependencies import get_db, get_token_header
-from cards_server.routers import items, users, cards
+from src.database import crud, sql_models, schema
+from src.database.database import engine
+from src.dependencies import get_db, get_token_header
+from src.routers import items, users, cards
 
 sql_models.Base.metadata.create_all(bind=engine)
 

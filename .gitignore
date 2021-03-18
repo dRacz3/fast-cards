@@ -1,2 +1,5 @@
 .ve
 .idea/
+*.pyc
+*.db
+*__pycache__*

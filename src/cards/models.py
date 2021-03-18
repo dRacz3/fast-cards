@@ -8,8 +8,8 @@ class DeckMetaData(BaseModel):
     name: str
     icon: str
 
-    def __str__(self):
-        return f"{self.id_name} - {self.name}"
+    class Config:
+        orm_mode = True
 
 
 class BlackCard(BaseModel):
@@ -19,8 +19,8 @@ class BlackCard(BaseModel):
     deck: str
     pick: int
 
-    def __str__(self):
-        return f"<{self.card_id}>[{self.deck}] {self.text}"
+    class Config:
+        orm_mode = True
 
 
 class WhiteCard(BaseModel):
@@ -29,5 +29,5 @@ class WhiteCard(BaseModel):
     icon: str
     deck: str
 
-    def __str__(self):
-        return f"<{self.card_id}> [{self.deck}] {self.text}"
+    class Config:
+        orm_mode = True
