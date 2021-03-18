@@ -3,3 +3,5 @@ fastapi
 black
 mypy
 sqlalchemy
+PyJWT==1.7.1
+pydantic[email]

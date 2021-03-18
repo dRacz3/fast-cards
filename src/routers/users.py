@@ -1,18 +1,44 @@
 from typing import List
 
-from fastapi import APIRouter, HTTPException, Depends
+from fastapi import APIRouter, HTTPException, Depends, Body
 from sqlalchemy.orm import Session
 
 import src.users.crud
 import src.users.models
+from src.auth.auth_handler import signJWT
+from src.auth.models import UserSchema, UserLoginSchema
 
 from src.dependencies import get_db, get_token_header
 
 router = APIRouter(
-    prefix="/users",
+    prefix="/auth",
     dependencies=[Depends(get_db)],
-    tags=["users"],
+    tags=["auth"],
 )
+
+# Replace with db
+users = []
+
+
+def check_user(data: UserLoginSchema):
+    for user in users:
+        if user.email == data.email and user.password == data.password:
+            return True
+    return False
+
+@router.post("/signup", tags=["user"])
+async def create_user(user: UserSchema = Body(...)):
+    users.append(user)  # replace with db call, making sure to hash the password first
+    return signJWT(user.email)
+
+
+@router.post("/login", tags=["user"])
+async def user_login(user: UserLoginSchema = Body(...)):
+    if check_user(user):
+        return signJWT(user.email)
+    return {
+        "error": "Wrong login details!"
+    }
 
 
 @router.post("/", response_model=src.users.models.User)
