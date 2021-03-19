@@ -1,8 +1,4 @@
-from typing import List
-
 from pydantic import BaseModel
-
-from src.database.schema import Item
 
 
 class UserBase(BaseModel):
@@ -10,7 +6,7 @@ class UserBase(BaseModel):
 
 
 class UserCreate(UserBase):
-    username : str
+    username: str
     password: str
 
 

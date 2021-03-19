@@ -17,7 +17,7 @@ router = APIRouter(
 )
 
 
-def check_user(data: UserLoginSchema, db : Session):
+def check_user(data: UserLoginSchema, db: Session):
     users = src.users.crud.get_users(db)
     for user in users:
         if user.email == data.email and user.password == data.password:
@@ -28,13 +28,13 @@ def check_user(data: UserLoginSchema, db : Session):
 @router.post("/signup", tags=["user"], response_model=TokenResponse)
 async def create_user(user: UserSchema = Body(...), db: Session = Depends(get_db)):
     src.users.crud.create_user_2(db=db, user=user)
-      # replace with db call, making sure to hash the password first
+    # replace with db call, making sure to hash the password first
     return signJWT(user.email)
 
 
 @router.post("/login", tags=["user"])
 async def user_login(user: UserLoginSchema = Body(...), db: Session = Depends(get_db)):
-    if check_user(user,db):
+    if check_user(user, db):
         return signJWT(user.email)
     return {"error": "Wrong login details!"}
 

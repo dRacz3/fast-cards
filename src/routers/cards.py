@@ -1,7 +1,6 @@
 from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 
-import src.cards.sql_models
 import src.cards.crud
 import src.cards.models
 from src.auth.auth_bearer import JWTBearer
