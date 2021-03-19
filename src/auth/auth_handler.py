@@ -6,25 +6,22 @@ from typing import Dict
 
 import jwt
 
-#TODO: replace with env vars.
+# TODO: replace with env vars.
+from pydantic import BaseModel
+
 JWT_SECRET = "seceret"
 JWT_ALGORITHM = "HS256"
 
 
-def token_response(token: str):
-    return {
-        "access_token": token
-    }
+class TokenResponse(BaseModel):
+    access_token: str
 
 
-def signJWT(user_id: str) -> Dict[str, str]:
-    payload = {
-        "user_id": user_id,
-        "expires": time.time() + 600
-    }
+def signJWT(user_id: str) -> TokenResponse:
+    payload = {"user_id": user_id, "expires": time.time() + 600}
     token = jwt.encode(payload, JWT_SECRET, algorithm=JWT_ALGORITHM)
 
-    return token_response(token)
+    return TokenResponse(access_token=token)
 
 
 def decodeJWT(token: str) -> dict:

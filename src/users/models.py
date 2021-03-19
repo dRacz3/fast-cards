@@ -10,13 +10,13 @@ class UserBase(BaseModel):
 
 
 class UserCreate(UserBase):
+    username : str
     password: str
 
 
 class User(UserBase):
     id: int
     is_active: bool
-    items: List[Item] = []
 
     class Config:
         orm_mode = True

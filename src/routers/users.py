@@ -5,7 +5,7 @@ from sqlalchemy.orm import Session
 
 import src.users.crud
 import src.users.models
-from src.auth.auth_handler import signJWT
+from src.auth.auth_handler import signJWT, TokenResponse
 from src.auth.models import UserSchema, UserLoginSchema
 
 from src.dependencies import get_db, get_token_header
@@ -16,29 +16,27 @@ router = APIRouter(
     tags=["auth"],
 )
 
-# Replace with db
-users = []
 
-
-def check_user(data: UserLoginSchema):
+def check_user(data: UserLoginSchema, db : Session):
+    users = src.users.crud.get_users(db)
     for user in users:
         if user.email == data.email and user.password == data.password:
             return True
     return False
 
-@router.post("/signup", tags=["user"])
-async def create_user(user: UserSchema = Body(...)):
-    users.append(user)  # replace with db call, making sure to hash the password first
+
+@router.post("/signup", tags=["user"], response_model=TokenResponse)
+async def create_user(user: UserSchema = Body(...), db: Session = Depends(get_db)):
+    src.users.crud.create_user_2(db=db, user=user)
+      # replace with db call, making sure to hash the password first
     return signJWT(user.email)
 
 
 @router.post("/login", tags=["user"])
-async def user_login(user: UserLoginSchema = Body(...)):
-    if check_user(user):
+async def user_login(user: UserLoginSchema = Body(...), db: Session = Depends(get_db)):
+    if check_user(user,db):
         return signJWT(user.email)
-    return {
-        "error": "Wrong login details!"
-    }
+    return {"error": "Wrong login details!"}
 
 
 @router.post("/", response_model=src.users.models.User)
