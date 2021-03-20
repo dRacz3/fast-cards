@@ -4,7 +4,6 @@ from pydantic import EmailStr
 from src.auth.models import UserSchema
 from src.database.database_models import User
 from src.users.crud import get_users, get_user_by_email, create_user
-from src.users.models import UserCreate
 
 
 @pytest.fixture(autouse=True)

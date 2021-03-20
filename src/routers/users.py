@@ -5,8 +5,8 @@ from sqlalchemy.orm import Session
 
 import src.users.crud
 import src.users.models
-from src.auth.auth_handler import signJWT, TokenResponse
-from src.auth.models import UserSchema, UserLoginSchema
+from src.auth.auth_handler import signJWT
+from src.auth.models import UserSchema, UserLoginSchema, TokenResponse
 
 from src.dependencies import get_db, get_token_header
 

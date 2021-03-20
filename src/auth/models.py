@@ -26,3 +26,12 @@ class UserLoginSchema(BaseModel):
             "example": {"email": "abdulazeez@x.com", "password": "weakpassword"}
         }
         orm_mode = True
+
+
+class TokenResponse(BaseModel):
+    access_token: str
+
+
+class TokenContent(BaseModel):
+    user_id: str
+    expires: float
