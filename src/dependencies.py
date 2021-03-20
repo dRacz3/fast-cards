@@ -1,4 +1,6 @@
+from src.auth.auth_handler import decodeJWT
 from src.database.database import SessionLocal
+from src.users.crud import get_user_by_email
 
 
 def get_db():
@@ -9,11 +11,13 @@ def get_db():
         db.close()
 
 
-from fastapi import Header, HTTPException
+from fastapi import Header, HTTPException, Depends
 
 
-async def get_token_header(x_token: str = Header(...)):
-    if x_token != "fake-super-secret-token":
+async def get_token_header(x_token: str = Header(...), db = Depends(get_db)):
+    token = decodeJWT(x_token)
+    user = get_user_by_email(db , token.user_id)
+    if user is None:
         raise HTTPException(status_code=400, detail="X-Token header invalid")
 
 

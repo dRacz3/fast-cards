@@ -1,17 +1,15 @@
 import uvicorn
-from fastapi import Depends, FastAPI
+from fastapi import FastAPI
 
 
-from src.database import crud, database_models, schema
+from src.database import crud, database_models
 from src.database.database import engine
-from src.dependencies import get_db, get_token_header
-from src.routers import items, users, cards
+from src.routers import users, cards
 
 database_models.Base.metadata.create_all(bind=engine)
 
 app = FastAPI()
 app.include_router(users.router)
-app.include_router(items.router)
 app.include_router(cards.router)
 # app.include_router(
 #     admin.router,
@@ -23,4 +21,4 @@ app.include_router(cards.router)
 
 
 if __name__ == "__main__":
-    uvicorn.run("main:app", host="0.0.0.0", port=8000, debug=True, reload=True)
+    uvicorn.run("main:app", host="0.0.0.0", port=8000, debug=True)
