@@ -44,7 +44,9 @@ async def user_login(user: UserLoginSchema = Body(...), db: Session = Depends(ge
     response_model=List[UserSchema],
     dependencies=[Depends(get_token_header)],
 )
-def read_users(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)) -> List[UserSchema]:
+def read_users(
+    skip: int = 0, limit: int = 100, db: Session = Depends(get_db)
+) -> List[UserSchema]:
     users = src.users.crud.get_users(db, skip=skip, limit=limit)
     return users
 

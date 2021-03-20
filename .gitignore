@@ -1,5 +1,7 @@
 .ve
 .idea/
 *.pyc
-*.db
+*.db*
 *__pycache__*
+htmlcov
+*.coverage*

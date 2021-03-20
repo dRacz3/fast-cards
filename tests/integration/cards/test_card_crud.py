@@ -4,7 +4,7 @@ from src.cards.crud import add_new_white_card, add_new_black_card
 
 from src.cards.models import WhiteCard, BlackCard
 from src.database import database_models
-from tests.integration.conftest import drop_table_content
+from tests.conftest import drop_table_content
 
 
 @pytest.fixture()

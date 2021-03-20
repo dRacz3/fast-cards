@@ -7,3 +7,5 @@ sqlalchemy-stubs
 PyJWT==2.0.1
 pydantic[email]
 pytest
+pytest-cov
+requests

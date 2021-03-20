@@ -6,16 +6,6 @@ from src.database.database_models import User
 from src.users.crud import get_users, get_user_by_email, create_user
 
 
-@pytest.fixture(autouse=True)
-def drop_users(database_connection):
-    db = database_connection
-    try:
-        _ = db.query(User).delete()
-        db.commit()
-    except:
-        db.rollback()
-
-
 @pytest.fixture()
 def insert_default_user(database_connection):
     db = database_connection
