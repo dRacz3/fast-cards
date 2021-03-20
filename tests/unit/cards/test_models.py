@@ -9,4 +9,3 @@ def test_white_card_model_conversion():
     assert mwc.deck == sql_white_card.deck
     assert mwc.text == sql_white_card.text
     assert mwc.icon == sql_white_card.icon
-

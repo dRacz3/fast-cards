@@ -27,7 +27,7 @@ def check_user(data: UserLoginSchema, db: Session):
 
 @router.post("/signup", tags=["user"], response_model=TokenResponse)
 async def create_user(user: UserSchema = Body(...), db: Session = Depends(get_db)):
-    src.users.crud.create_user_2(db=db, user=user)
+    src.users.crud.create_user(db=db, user=user)
     # replace with db call, making sure to hash the password first
     return signJWT(user.email)
 
@@ -37,14 +37,6 @@ async def user_login(user: UserLoginSchema = Body(...), db: Session = Depends(ge
     if check_user(user, db):
         return signJWT(user.email)
     return {"error": "Wrong login details!"}
-
-
-@router.post("/", response_model=src.users.models.User)
-def create_user(user: src.users.models.UserCreate, db: Session = Depends(get_db)):
-    db_user = src.users.crud.get_user_by_email(db, email=user.email)
-    if db_user:
-        raise HTTPException(status_code=400, detail="Email already registered")
-    return src.users.crud.create_user(db=db, user=user)
 
 
 @router.get(
