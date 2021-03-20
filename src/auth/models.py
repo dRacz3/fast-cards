@@ -14,6 +14,7 @@ class UserSchema(BaseModel):
                 "password": "weakpassword",
             }
         }
+        orm_mode = True
 
 
 class UserLoginSchema(BaseModel):
@@ -24,3 +25,4 @@ class UserLoginSchema(BaseModel):
         schema_extra = {
             "example": {"email": "abdulazeez@x.com", "password": "weakpassword"}
         }
+        orm_mode = True

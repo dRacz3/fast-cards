@@ -4,7 +4,14 @@ from sqlalchemy.orm import sessionmaker
 
 from src.config import DATABASE_BACKEND
 
-SQLALCHEMY_DATABASE_URL = "sqlite:///./sql_app.db"
+import os
+
+RUNTIME_ENV = os.getenv("RUNTIME_ENV", "TEST")
+
+if RUNTIME_ENV == "TEST":
+    SQLALCHEMY_DATABASE_URL = "sqlite:///./test_sql_app.db"
+else:
+    SQLALCHEMY_DATABASE_URL = "sqlite:///./prod_sql_app.db"
 
 if "SQLITE" == DATABASE_BACKEND:
     # this is needed only for SQLite. It's not needed for other databases
