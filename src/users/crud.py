@@ -5,6 +5,7 @@ from sqlalchemy.orm import Session
 import src.database.database_models
 import src.users.models
 from src.auth.models import UserSchema
+from src.exceptions import UserNotFoundException
 
 
 def get_user(db: Session, user_id: int):
@@ -21,7 +22,12 @@ def get_user_by_email(db: Session, email: str) -> UserSchema:
         .filter(src.database.database_models.User.email == email)
         .first()
     )
-    return UserSchema(username=u.username, email=u.email, password=u.hashed_password)
+    if u is not None:
+        return UserSchema(
+            username=u.username, email=u.email, password=u.hashed_password
+        )
+    else:
+        raise UserNotFoundException(f"Could not find user with email: {email}")
 
 
 def get_users(db: Session, skip: int = 0, limit: int = 100) -> List[UserSchema]:

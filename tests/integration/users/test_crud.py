@@ -11,7 +11,7 @@ from src.users.models import UserCreate
 def drop_users(database_connection):
     db = database_connection
     try:
-        num_rows_deleted = db.query(User).delete()
+        _ = db.query(User).delete()
         db.commit()
     except:
         db.rollback()
@@ -21,7 +21,8 @@ def drop_users(database_connection):
 def insert_default_user(database_connection):
     db = database_connection
     created_user = create_user(
-        db, UserSchema(email=EmailStr("asd@hello.com"), username="mr.asd", password="nyeh")
+        db,
+        UserSchema(email=EmailStr("asd@hello.com"), username="mr.asd", password="nyeh"),
     )
     yield created_user
 

@@ -3,6 +3,7 @@ fastapi
 black
 mypy
 sqlalchemy
-PyJWT==1.7.1
+sqlalchemy-stubs
+PyJWT==2.0.1
 pydantic[email]
 pytest
