@@ -1,6 +1,9 @@
+from fastapi import Header, HTTPException, Depends
+
 from src.auth.auth_handler import decodeJWT
 from src.database.database import SessionLocal
 from src.users.crud import get_user_by_email
+from src.websocket.connection_manager import ConnectionManager
 
 
 def get_db():
@@ -11,7 +14,11 @@ def get_db():
         db.close()
 
 
-from fastapi import Header, HTTPException, Depends
+manager = ConnectionManager()
+
+
+def get_websocket_connection_manager():
+    yield manager
 
 
 async def get_token_header(x_token: str = Header(...), db=Depends(get_db)):

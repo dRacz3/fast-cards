@@ -20,7 +20,12 @@ class Room:
 
     async def remove_user_from_room(self, user: str, connection: WebSocket):
         print(f"Removed connection for user : {user} from room")
-        await connection.close(code=status.WS_1001_GOING_AWAY)
+        try:
+            await connection.close(code=status.WS_1001_GOING_AWAY)
+        except Exception as e:
+            print(
+                f"{e} => Connection seems to be already closed. Maybe a user connected multiple times?"
+            )
         self.connections[user].remove(connection)
         if len(self.connections[user]) == 0:
             print(
