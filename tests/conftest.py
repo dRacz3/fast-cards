@@ -16,16 +16,19 @@ def drop_table_content(db: Session, table_model: Any):
     except:
         db.rollback()
 
+
 def default_header() -> dict:
     return {
         "accept": "application/json",
         "Content-Type": "application/json",
     }
 
+
 def default_header_with_token(token) -> dict:
     header = default_header()
     header.update(dict(Authorization=f"Bearer {token}"))
     return header
+
 
 def default_header_with_x_token(token) -> dict:
     header = default_header()

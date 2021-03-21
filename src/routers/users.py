@@ -2,7 +2,7 @@ from typing import List
 
 from fastapi import APIRouter, HTTPException, Depends, Body
 from sqlalchemy.orm import Session
-from starlette.responses import JSONResponse
+from fastapi.responses import JSONResponse
 
 import src.users.crud
 import src.users.models
@@ -38,7 +38,12 @@ async def create_user(user: UserSchema = Body(...), db: Session = Depends(get_db
     return signJWT(user.email)
 
 
-@router.post("/login", tags=["user"], response_model =TokenResponse  ,responses={"403": {"model": LoginFailureMessage}})
+@router.post(
+    "/login",
+    tags=["user"],
+    response_model=TokenResponse,
+    responses={"403": {"model": LoginFailureMessage}},
+)
 async def user_login(user: UserLoginSchema = Body(...), db: Session = Depends(get_db)):
     if check_user(user, db):
         return signJWT(user.email)
