@@ -1,41 +1,44 @@
 import json
 
-from src.cards.crud import add_new_white_card, add_new_black_card
+from sqlalchemy.orm import Session
+
+from src.cards.crud import add_multiple_new_black_card, add_multiple_new_white_card
 from src.cards.models import WhiteCard, BlackCard
 from src.database.database import SessionLocal
 
-with open("resources/hungarian_cards.json") as f:
-    data = json.load(f)
 
-db = SessionLocal()
+def load_cards_to_dabase(db: Session, input_file_path: str):
+    with open(input_file_path) as f:
+        data = json.load(f)
+    print("Inserting white cards")
+    suc = 0
+    fail = 0
 
-print("Inserting white cards")
-suc = 0
-fail = 0
-for i, key in enumerate(data["white"]):
+    wcs = []
+    for i, key in enumerate(data["white"]):
+        wcs.append(WhiteCard(card_id=None, **key))
+
     try:
-        add_new_white_card(db, WhiteCard(card_id=1900 + i, **key))
-        suc += 1
+        add_multiple_new_white_card(db, wcs)
     except Exception as e:
         print(e)
         db.rollback()
-        fail += 1
 
-print(f"success:{suc},  failure: {fail}")
+    print(f"success:{suc},  failure: {fail}")
 
-
-print("Inserting black cards")
-suc = 0
-fail = 0
-for i, key in enumerate(data["black"]):
+    print("Inserting black cards")
+    bcs = []
+    for i, key in enumerate(data["black"]):
+        bcs.append(BlackCard(card_id=None, **key))
     try:
-        add_new_black_card(db, BlackCard(card_id=i, **key))
-        suc +=1
+        add_multiple_new_black_card(db, bcs)
     except Exception as e:
         print(e)
         db.rollback()
-        fail +=1
 
-print(f"success:{ suc},  failure: {fail}")
+    print(f"success:{ suc},  failure: {fail}")
 
 
+if __name__ == "__main__":
+    database = SessionLocal()
+    load_cards_to_dabase(database, "resources/hungarian_cards.json")

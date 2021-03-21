@@ -7,7 +7,7 @@ from src.auth.auth_handler import decodeJWT
 from src.dependencies import get_db, get_websocket_connection_manager
 from src.users.crud import get_user_by_email
 from src.websocket.models import WebSocketMessage
-from src.websocket.connection_manager import ConnectionManager
+from src.websocket.connection_manager import ConnectionManager, SENDER_TYPES
 
 html = """
 <!DOCTYPE html>
@@ -80,7 +80,7 @@ async def websocket_endpoint(
                 username,
                 WebSocketMessage(
                     message=f"You wrote: {data}",
-                    sender="PERSONAL",
+                    sender=SENDER_TYPES.PERSONAL,
                     topic=room_name,
                 ),
             )
@@ -88,7 +88,7 @@ async def websocket_endpoint(
                 room_name,
                 WebSocketMessage(
                     message=f"[{username}] says: {data}",
-                    sender="BROADCAST",
+                    sender=SENDER_TYPES.BROADCAST,
                     topic=room_name,
                 ),
             )
@@ -100,7 +100,7 @@ async def websocket_endpoint(
             room_name,
             WebSocketMessage(
                 message=f"[{username}] left the chat",
-                sender="BROADCAST",
+                sender=SENDER_TYPES.BROADCAST,
                 topic=room_name,
             ),
         )

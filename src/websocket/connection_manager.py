@@ -6,6 +6,11 @@ from fastapi import Cookie, Query, WebSocket, status
 from src.websocket.models import Room, WebSocketMessage
 
 
+class SENDER_TYPES:
+    BROADCAST = "BROADCAST"
+    PERSONAL = "DIRECT"
+
+
 async def get_cookie_or_token(
     websocket: WebSocket,
     session: Optional[str] = Cookie(None),
@@ -31,7 +36,7 @@ class ConnectionManager:
             room_name,
             WebSocketMessage(
                 message=f"{username} has entered room {room_name}",
-                sender="BROADCAST",
+                sender=SENDER_TYPES.BROADCAST,
                 topic=room_name,
             ),
         )
