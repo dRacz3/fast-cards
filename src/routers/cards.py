@@ -4,6 +4,7 @@ from sqlalchemy.orm import Session
 import src.cards.crud
 import src.cards.models
 from src.auth.auth_bearer import JWTBearer
+from src.auth.auth_handler import decodeJWT
 
 from src.dependencies import get_db
 
@@ -24,3 +25,8 @@ def create_white_card(card: src.cards.models.WhiteCard, db: Session = Depends(ge
 def create_black_card(card: src.cards.models.BlackCard, db: Session = Depends(get_db)):
     _ = src.cards.crud.add_new_black_card(db, card)
     return card
+
+
+@router.put("/test")
+def asd(credentials = Depends(JWTBearer())):
+    return decodeJWT(credentials)

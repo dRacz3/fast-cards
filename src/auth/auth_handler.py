@@ -10,7 +10,7 @@ from src.config import get_settings
 
 
 def signJWT(user_id: str) -> TokenResponse:
-    payload = TokenContent(user_id=user_id, expires=time.time() + 600)
+    payload = TokenContent(user_id=user_id, expires=time.time() + 3600)
     token = jwt.encode(
         payload.dict(),
         get_settings().JWT_SECRET,

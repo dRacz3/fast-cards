@@ -30,3 +30,11 @@ class BlackCard(Base):
     icon = Column(String)
     deck = Column(String, index=True)
     pick = Column(Integer)
+
+
+class Room(Base):
+    __tablename__ = 'rooms'
+
+    room_id = Column(Integer, primary_key=True, autoincrement=True)
+    room_name = Column(String)
+    host_user = Column(String)
