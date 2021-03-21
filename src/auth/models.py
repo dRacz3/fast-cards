@@ -35,3 +35,12 @@ class TokenResponse(BaseModel):
 class TokenContent(BaseModel):
     user_id: str
     expires: float
+
+
+class LoginFailureMessage(BaseModel):
+    detail: str
+
+    class Config:
+        schema_extra = {
+            "example": {"detail": "The reason why the authenticaion failed"}
+        }

@@ -32,7 +32,7 @@ def test_get_black_cards(valid_user_token, test_client):
         "text": "card text",
         "icon": "deck icon",
         "deck": "deck name",
-        "pick" : 1
+        "pick": 1,
     }
     r = test_client.put(
         "/cards/black",

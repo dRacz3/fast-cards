@@ -2,11 +2,17 @@ from typing import List
 
 from fastapi import APIRouter, HTTPException, Depends, Body
 from sqlalchemy.orm import Session
+from starlette.responses import JSONResponse
 
 import src.users.crud
 import src.users.models
 from src.auth.auth_handler import signJWT
-from src.auth.models import UserSchema, UserLoginSchema, TokenResponse
+from src.auth.models import (
+    UserSchema,
+    UserLoginSchema,
+    TokenResponse,
+    LoginFailureMessage,
+)
 
 from src.dependencies import get_db, get_token_header
 
@@ -32,11 +38,11 @@ async def create_user(user: UserSchema = Body(...), db: Session = Depends(get_db
     return signJWT(user.email)
 
 
-@router.post("/login", tags=["user"])
+@router.post("/login", tags=["user"], response_model =TokenResponse  ,responses={"403": {"model": LoginFailureMessage}})
 async def user_login(user: UserLoginSchema = Body(...), db: Session = Depends(get_db)):
     if check_user(user, db):
         return signJWT(user.email)
-    return {"error": "Wrong login details!"}
+    return JSONResponse(status_code=403, content=dict(detail="Wrong login details!"))
 
 
 @router.get(
