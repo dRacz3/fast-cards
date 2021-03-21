@@ -25,4 +25,3 @@ def create_white_card(card: src.cards.models.WhiteCard, db: Session = Depends(ge
 def create_black_card(card: src.cards.models.BlackCard, db: Session = Depends(get_db)):
     _ = src.cards.crud.add_new_black_card(db, card)
     return card
-

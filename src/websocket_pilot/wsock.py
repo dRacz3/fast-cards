@@ -1,3 +1,4 @@
+from dataclasses import asdict
 from typing import Optional, Dict
 
 from fastapi import Cookie, Depends, FastAPI, Query, WebSocket, status, APIRouter
@@ -8,7 +9,7 @@ from starlette.websockets import WebSocketDisconnect
 from src.auth.auth_handler import decodeJWT
 from src.dependencies import get_db
 from src.users.crud import get_user_by_email
-from src.websocket_pilot.models import Room
+from src.websocket_pilot.models import Room, WebSocketMessage
 
 app = FastAPI()
 
@@ -81,13 +82,16 @@ class ConnectionManager:
     def disconnect(self, room_name: str, username: str, websocket: WebSocket):
         self.active_rooms[room_name].remove_user_from_room(username, websocket)
 
-    async def send_personal_message(self, message: str, websocket: WebSocket):
-        await websocket.send_text(message)
+    async def send_personal_message(
+        self, room_name : str,  username : str,message: WebSocketMessage
+    ):
+        for connection in self.active_rooms[room_name].connections[username]:
+            await connection.send_json(asdict(message))
 
-    async def broadcast(self, room_name, message: str):
+    async def broadcast(self, room_name: str, message: WebSocketMessage):
         for connection_list in self.active_rooms[room_name].connections.values():
             for connection in connection_list:
-                await connection.send_text(message)
+                await connection.send_json(asdict(message))
 
 
 manager = ConnectionManager()
@@ -96,6 +100,7 @@ manager = ConnectionManager()
 @router.get("/")
 async def get():
     return HTMLResponse(html)
+
 
 @router.websocket("/ws/{room_name}/{token}")
 async def websocket_endpoint(
@@ -110,8 +115,30 @@ async def websocket_endpoint(
     try:
         while True:
             data = await websocket.receive_text()
-            await manager.send_personal_message(f"You wrote: {data}", websocket)
-            await manager.broadcast(room_name, f"[{username}] says: {data}")
+            await manager.send_personal_message(
+                room_name,
+                username,
+                WebSocketMessage(
+                    message=f"You wrote: {data}",
+                    sender="PERSONAL",
+                    topic=room_name,
+                ),
+            )
+            await manager.broadcast(
+                room_name,
+                WebSocketMessage(
+                    message=f"[{username}] says: {data}",
+                    sender="BROADCAST",
+                    topic=room_name,
+                ),
+            )
     except WebSocketDisconnect:
         manager.disconnect(room_name=room_name, username=username, websocket=websocket)
-        await manager.broadcast(room_name, f"[{username}] left the chat")
+        await manager.broadcast(
+            room_name,
+            WebSocketMessage(
+                message=f"[{username}] left the chat",
+                sender="BROADCAST",
+                topic=room_name,
+            ),
+        )
