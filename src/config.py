@@ -3,6 +3,7 @@ import os
 from pydantic import BaseSettings
 
 
+# Reminder:  BaseSettings props can be overwritten by env vars, even though it is not specified.
 class Settings(BaseSettings):
     DATABASE_BACKEND: str = "SQLITE"
     RUNTIME_ENV: str = os.getenv("RUNTIME_ENV", "TEST")
