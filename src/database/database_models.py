@@ -33,8 +33,8 @@ class BlackCard(Base):
 
 
 class Room(Base):
-    __tablename__ = 'rooms'
+    __tablename__ = "rooms"
 
     room_id = Column(Integer, primary_key=True, autoincrement=True)
-    room_name = Column(String)
+    room_name = Column(String, unique=True)
     host_user = Column(String)

@@ -1,15 +1,12 @@
-from typing import Optional, List
+from typing import Optional, Dict
 
 from fastapi import Cookie, Depends, FastAPI, Query, WebSocket, status, APIRouter
 from fastapi.responses import HTMLResponse
-from pydantic import BaseModel
 from sqlalchemy.orm import Session
 from starlette.websockets import WebSocketDisconnect
 
-from src.auth.auth_bearer import JWTBearer
 from src.auth.auth_handler import decodeJWT
-from src.auth.models import UserSchema
-from src.dependencies import get_token_header, get_db
+from src.dependencies import get_db
 from src.users.crud import get_user_by_email
 from src.websocket_pilot.models import Room
 
@@ -24,6 +21,7 @@ html = """
     <body>
         <h1>WebSocket Chat</h1>
         <h2>Your ID: <span id="ws-id"></span></h2>
+        
         <form action="" onsubmit="sendMessage(event)">
             <input type="text" id="messageText" autocomplete="off"/>
             <button>Send</button>
@@ -33,7 +31,7 @@ html = """
         <script>
             var client_id = Date.now()
             document.querySelector("#ws-id").textContent = client_id;
-            var ws = new WebSocket(`ws://localhost:8000/ws/lobby/eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ1c2VyX2lkIjoiYWJkdWxhemVlekB4LmNvbSIsImV4cGlyZXMiOjE2MTYzMzQzMjEuMDMwMTAzfQ.oHmCk_TOB6oHYcZKOPG3gXh6JG5suQCnml-fXkovCok`);
+            var ws = new WebSocket(`ws://localhost:8000/ws/lobby/eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ1c2VyX2lkIjoiYWJkdWxhemVlekB4LmNvbSIsImV4cGlyZXMiOjE2MTYzMzk3MTkuMDgzOTAzfQ.LTvJfpF62SndBq_tqPqAtj5IR5wlE75hMN34Vofn8C4`);
             ws.onmessage = function(event) {
                 var messages = document.getElementById('messages')
                 var message = document.createElement('li')
@@ -54,7 +52,6 @@ html = """
 
 router = APIRouter(
     prefix="/ws",
-    # dependencies=[Depends(get_db)],
     tags=["ws"],
 )
 
@@ -68,23 +65,29 @@ async def get_cookie_or_token(
         await websocket.close(code=status.WS_1008_POLICY_VIOLATION)
     return session or token
 
+
 class ConnectionManager:
     def __init__(self):
-        self.active_connections: List[WebSocket] = []
+        self.active_rooms: Dict[str, Room] = {}
 
-    async def connect(self, websocket: WebSocket):
+    async def connect(self, room_name: str, username: str, websocket: WebSocket):
+        room = self.active_rooms.get(room_name)
+        if room is None:
+            self.active_rooms[room_name] = Room(room_name=room_name, host_user=username)
+            room = self.active_rooms[room_name]
         await websocket.accept()
-        self.active_connections.append(websocket)
+        room.add_user_to_room(username, websocket)
 
-    def disconnect(self, websocket: WebSocket):
-        self.active_connections.remove(websocket)
+    def disconnect(self, room_name: str, username: str, websocket: WebSocket):
+        self.active_rooms[room_name].remove_user_from_room(username, websocket)
 
     async def send_personal_message(self, message: str, websocket: WebSocket):
         await websocket.send_text(message)
 
-    async def broadcast(self, message: str):
-        for connection in self.active_connections:
-            await connection.send_text(message)
+    async def broadcast(self, room_name, message: str):
+        for connection_list in self.active_rooms[room_name].connections.values():
+            for connection in connection_list:
+                await connection.send_text(message)
 
 
 manager = ConnectionManager()
@@ -94,52 +97,21 @@ manager = ConnectionManager()
 async def get():
     return HTMLResponse(html)
 
-
-@router.websocket("/ws")
-async def websocket_endpoint(websocket: WebSocket):
-    await websocket.accept()
-    while True:
-        data = await websocket.receive_text()
-        await websocket.send_text(f"Message text was: {data}")
-
-
-# @router.websocket("/items/{item_id}/ws")
-# async def websocket_endpoint(
-#     websocket: WebSocket,
-#     item_id: str,
-#     q: Optional[int] = None,
-#     cookie_or_token: str = Depends(get_cookie_or_token),
-# ):
-#     await websocket.accept()
-#     while True:
-#         data = await websocket.receive_text()
-#         await websocket.send_text(
-#             f"Session cookie or query token value is: {cookie_or_token}"
-#         )
-#         if q is not None:
-#             await websocket.send_text(f"Query parameter q is: {q}")
-#         await websocket.send_text(f"Message text was: {data}, for item ID: {item_id}")
-
-
 @router.websocket("/ws/{room_name}/{token}")
 async def websocket_endpoint(
-    websocket: WebSocket,
-    room_name: str,
-    token,
-    db: Session = Depends(get_db)
+    websocket: WebSocket, room_name: str, token, db: Session = Depends(get_db)
 ):
     decoded_content = decodeJWT(token)
     if decoded_content is None:
         raise Exception("No valid credentials!")
     user_email = decoded_content.user_id
-    username = get_user_by_email(db ,user_email).username
-    Room.create_room(db, room_name=room_name, creator=username)
-    await manager.connect(websocket)
+    username = get_user_by_email(db, user_email).username
+    await manager.connect(websocket=websocket, room_name=room_name, username=username)
     try:
         while True:
             data = await websocket.receive_text()
             await manager.send_personal_message(f"You wrote: {data}", websocket)
-            await manager.broadcast(f"[{username}] says: {data}")
+            await manager.broadcast(room_name, f"[{username}] says: {data}")
     except WebSocketDisconnect:
-        manager.disconnect(websocket)
-        await manager.broadcast(f"[{username}] left the chat")
+        manager.disconnect(room_name=room_name, username=username, websocket=websocket)
+        await manager.broadcast(room_name, f"[{username}] left the chat")

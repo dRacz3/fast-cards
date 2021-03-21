@@ -26,7 +26,3 @@ def create_black_card(card: src.cards.models.BlackCard, db: Session = Depends(ge
     _ = src.cards.crud.add_new_black_card(db, card)
     return card
 
-
-@router.put("/test")
-def asd(credentials = Depends(JWTBearer())):
-    return decodeJWT(credentials)

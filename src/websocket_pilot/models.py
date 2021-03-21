@@ -1,28 +1,28 @@
-from typing import List
+from dataclasses import dataclass, field
+from typing import List, Dict
 
-from pydantic import BaseModel
-from sqlalchemy.orm import Session
+from fastapi.websockets import WebSocket
+from starlette import status
 
-from src.auth.models import UserSchema
-from src.database import database_models
-
-
-class Room(BaseModel):
+@dataclass
+class Room:
     room_name: str
-    host_user: UserSchema
+    host_user: str
+    connections: Dict[str, List[WebSocket]] = field(default_factory=dict)
 
-    class Config:
-        orm_mode = True
+    def add_user_to_room(self, user: str, connection: WebSocket):
+        print(f"Trying to add user {user} to room")
+        if user not in self.connections.keys():
+            self.connections[user] = []
+        self.connections[user].append(connection)
+        print(f"Added user {user} to room")
 
-    @classmethod
-    def query_all_room(cls, db : Session):
-        rooms_returned : List[database_models.Room]  = db.query(database_models.Room).all()
-        return [cls(room_name=r.room_name, host_user=r.host_user) for r in rooms_returned]
-
-    @classmethod
-    def create_room(cls, db: Session, room_name : str, creator : str):
-        created_room_db = database_models.Room(room_name=room_name, host_user=creator)
-        db.add(created_room_db)
-        db.commit()
-        db.refresh(created_room_db)
-        return created_room_db
+    def remove_user_from_room(self, user: str, connection: WebSocket):
+        print(f"Removed connection for user : {user} from room")
+        connection.close(code=status.WS_1001_GOING_AWAY)
+        self.connections[user].remove(connection)
+        if len(self.connections[user]) == 0:
+            print(
+                f"No more user connections for this room {self.room_name} for user {user}, removing the user from room"
+            )
+            del self.connections[user]
