@@ -1,3 +1,4 @@
+import random
 from typing import List, Optional, Dict
 
 from pydantic import BaseModel, Field
@@ -33,8 +34,10 @@ class GameHasEnded(GameEventException):
 class GameIsFull(GameEventException):
     pass
 
+
 class LogicalError(GameEventException):
     pass
+
 
 class CardsAgainstHumanityRoles:
     PLAYER = "PLAYER"
@@ -68,12 +71,14 @@ class CardsAgainstHumanityPlayer(BaseModel):
 
     def elect_as_tzar(self):
         self.current_role = CardsAgainstHumanityRoles.TZAR
+        print(f"{self.username} was elected az a TZAR")
 
     def revert_to_normal_player(self):
         self.current_role = CardsAgainstHumanityRoles.PLAYER
 
-    def reward_points(self, points=1):
+    def reward_points(self, points: int = 1):
         self.points += points
+        print(f"{self.username} was given {points} points")
         if self.points > 5:
             raise PlayerHasWon(self)
 
@@ -136,6 +141,22 @@ class GameSession(BaseModel):
                 p.cards_in_hand += white_cards_for_player
                 for c in white_cards_for_player:
                     self.white_cards.remove(c)
+        self.__elect_new_tzar()
+
+    def __elect_new_tzar(self):
+        player = random.choice(
+            [
+                p
+                for p in self.players
+                if p.current_role != CardsAgainstHumanityRoles.TZAR
+            ]
+        )
+        self.__revert_everyone_to_normal_player()
+        player.elect_as_tzar()
+
+    def __revert_everyone_to_normal_player(self):
+        for p in self.players:
+            p.revert_to_normal_player()
 
     def player_join(self, username: str):
         white_cards_for_player = self.white_cards[0:CARDS_IN_PLAYER_HAND]

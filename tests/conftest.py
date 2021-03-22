@@ -5,7 +5,7 @@ from sqlalchemy.orm import Session
 from starlette.testclient import TestClient
 
 import src.application
-from scripts.load_cards_to_db import load_cards_to_dabase
+from src.utils.bootstrapping import load_cards_to_dabase
 from src.database.database import SessionLocal
 from src.database.database_models import User
 

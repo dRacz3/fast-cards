@@ -1,6 +1,6 @@
 import pytest
 
-from scripts.load_cards_to_db import load_cards_to_dabase
+from src.utils.bootstrapping import load_cards_to_dabase
 
 
 @pytest.fixture()
