@@ -17,6 +17,8 @@ from src.internal.cards_against_humanity_rules.models import (
     CardsAgainstHumanityPlayer,
     Submission,
     POINTS_TO_WIN,
+    PlayerSubmitCards,
+    SelectWinningSubmission,
 )
 
 
@@ -68,7 +70,7 @@ def test_game_starts_only_with_enough_players(
 ):
     prefill_cards_to_database()
     db = database_connection
-    sess = GameStateMachine.new_session("test", 5, db)
+    sess: GameStateMachine = GameStateMachine.new_session("test", 5, db)
     ### STARTING GAME PHASE ######
     assert not sess.start_game()
     assert sess.state == GameStates.STARTING
@@ -98,7 +100,10 @@ def test_game_starts_only_with_enough_players(
     for player in everyone_else:
         assert len(player.cards_in_hand) == CARDS_IN_PLAYER_HAND
         sess.player_submit_card(
-            player.username, player.cards_in_hand[0:active_card_picks]
+            PlayerSubmitCards(
+                submitting_user=player.username,
+                cards=player.cards_in_hand[0:active_card_picks],
+            )
         )
         assert len(player.cards_in_hand) == CARDS_IN_PLAYER_HAND - active_card_picks
 
@@ -132,7 +137,10 @@ def test_invalid_player_action_when_player_tries_to_submit_cards(
     sess: GameStateMachine = default_game_with_3_players
     with pytest.raises(InvalidPlayerAction):
         sess.player_submit_card(
-            sess.players[0].username, sess.players[0].cards_in_hand[0:1]
+            PlayerSubmitCards(
+                submitting_user=sess.players[0].username,
+                cards=sess.players[0].cards_in_hand[0:1],
+            )
         )
 
 
@@ -147,8 +155,10 @@ def test_invalid_player_action_when_player_tries_to_submit_cards_wrong_number(
     expected_card_count = sess.currently_active_card.pick
     with pytest.raises(InvalidPlayerAction):
         sess.player_submit_card(
-            sess.players[0].username,
-            sess.players[0].cards_in_hand[0 : expected_card_count + 1],
+            PlayerSubmitCards(
+                submitting_user=sess.players[0].username,
+                cards=sess.players[0].cards_in_hand[0 : expected_card_count + 1],
+            )
         )
 
 
@@ -161,7 +171,10 @@ def test_logical_error_when_non_existing_palyer_submits(default_game_with_3_play
     expected_card_count = sess.currently_active_card.pick
     with pytest.raises(LogicalError):
         sess.player_submit_card(
-            "DWADWADWAGWABAWB", sess.players[0].cards_in_hand[0:expected_card_count]
+            PlayerSubmitCards(
+                submitting_user="DWADWADWAGWABAWB",
+                cards=sess.players[0].cards_in_hand[0:expected_card_count],
+            )
         )
 
 
@@ -180,8 +193,10 @@ def test_invalid_player_action_when_submitting_not_owned_cards(
     for player in normal_players:
         with pytest.raises(InvalidPlayerAction):
             sess.player_submit_card(
-                player.username,
-                sess.white_cards[0:active_card_picks]  # <- Cheeky stuff in this line,
+                PlayerSubmitCards(
+                    submitting_user=player.username,
+                    cards=sess.white_cards[0:active_card_picks],
+                )  # <- Cheeky stuff in this line,
                 # this should come from the player
             )
 
@@ -200,7 +215,10 @@ def test_logical_error_when_selected_winner_submission_does_not_exist(
     active_card_picks = sess.currently_active_card.pick
     for player in normal_players:
         sess.player_submit_card(
-            player.username, player.cards_in_hand[0:active_card_picks]
+            PlayerSubmitCards(
+                submitting_user=player.username,
+                cards=player.cards_in_hand[0:active_card_picks],
+            )
         )
 
     with pytest.raises(InvalidPlayerAction):
@@ -225,7 +243,10 @@ def test_game_has_ended_when_ran_out_of_black_cards(default_game_with_3_players)
     active_card_picks = sess.currently_active_card.pick
     for player in normal_players:
         sess.player_submit_card(
-            player.username, player.cards_in_hand[0:active_card_picks]
+            PlayerSubmitCards(
+                submitting_user=player.username,
+                cards=player.cards_in_hand[0:active_card_picks],
+            )
         )
 
     assert sess.state == GameStates.TZAR_CHOOSING_WINNER
@@ -251,7 +272,10 @@ def test_game_has_ended_when_ran_out_of_white_cards(default_game_with_3_players)
     active_card_picks = sess.currently_active_card.pick
     for player in normal_players:
         sess.player_submit_card(
-            player.username, player.cards_in_hand[0:active_card_picks]
+            PlayerSubmitCards(
+                submitting_user=player.username,
+                cards=player.cards_in_hand[0:active_card_picks],
+            )
         )
 
     assert sess.state == GameStates.TZAR_CHOOSING_WINNER
@@ -274,7 +298,10 @@ def test_game_has_ended_when_player_reached_points_to_win(default_game_with_3_pl
     active_card_picks = sess.currently_active_card.pick
     for player in normal_players:
         sess.player_submit_card(
-            player.username, player.cards_in_hand[0:active_card_picks]
+            PlayerSubmitCards(
+                submitting_user=player.username,
+                cards=player.cards_in_hand[0:active_card_picks],
+            )
         )
 
     assert sess.state == GameStates.TZAR_CHOOSING_WINNER

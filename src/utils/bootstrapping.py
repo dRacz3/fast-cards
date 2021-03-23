@@ -9,9 +9,6 @@ from src.cards.models import WhiteCard, BlackCard
 def load_cards_to_dabase(db: Session, input_file_path: str):
     with open(input_file_path) as f:
         data = json.load(f)
-    print("Inserting white cards")
-    suc = 0
-    fail = 0
 
     wcs = []
     for i, key in enumerate(data["white"]):
@@ -23,9 +20,6 @@ def load_cards_to_dabase(db: Session, input_file_path: str):
         print(e)
         db.rollback()
 
-    print(f"success:{suc},  failure: {fail}")
-
-    print("Inserting black cards")
     bcs = []
     for i, key in enumerate(data["black"]):
         bcs.append(BlackCard(card_id=None, **key))
@@ -34,5 +28,3 @@ def load_cards_to_dabase(db: Session, input_file_path: str):
     except Exception as e:
         print(e)
         db.rollback()
-
-    print(f"success:{ suc},  failure: {fail}")

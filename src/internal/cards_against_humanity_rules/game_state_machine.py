@@ -17,6 +17,8 @@ from src.internal.cards_against_humanity_rules.models import (
     Submission,
     CARDS_IN_PLAYER_HAND,
     CardsAgainstHumanityRoles,
+    PlayerSubmitCards,
+    SelectWinningSubmission,
 )
 
 
@@ -63,31 +65,33 @@ class GameStateMachine(BaseModel):
         else:
             return False
 
-    def player_submit_card(self, username: str, cards: List[WhiteCard]):
+    def player_submit_card(self, submit_event: PlayerSubmitCards):
         if self.currently_active_card is None:
             raise InvalidPlayerAction(
                 "Game has not started, but player tried to submit cards."
             )
 
-        player = self.__lookup_player_by_name(username)
+        player = self.__lookup_player_by_name(submit_event.submitting_user)
         if player is not None:
-            if len(cards) != self.currently_active_card.pick:
+            if len(submit_event.cards) != self.currently_active_card.pick:
                 raise InvalidPlayerAction(
-                    f"{username} tried to submit {len(cards)}, but it should've been {self.currently_active_card.pick}"
+                    f"{submit_event.submitting_user} tried to submit {len(submit_event.cards)}, but it should've been {self.currently_active_card.pick}"
                 )
 
-            verified_card_count = len([c for c in cards if c in player.cards_in_hand])
-            if verified_card_count != len(cards):
+            verified_card_count = len(
+                [c for c in submit_event.cards if c in player.cards_in_hand]
+            )
+            if verified_card_count != len(submit_event.cards):
                 raise InvalidPlayerAction(
-                    f"{username} tried to submit cards, that are not in hands!"
+                    f"{submit_event.submitting_user} tried to submit cards, that are not in hands!"
                 )
 
             submission = Submission(
-                white_cards=cards, black_card=self.currently_active_card
+                white_cards=submit_event.cards, black_card=self.currently_active_card
             )
             player.submissions.append(submission)
             self.player_submissions[player] = submission
-            for card in cards:
+            for card in submit_event.cards:
                 player.cards_in_hand.remove(card)
 
             if (
@@ -97,7 +101,7 @@ class GameStateMachine(BaseModel):
 
         else:
             raise LogicalError(
-                f"Tried to lookup player: {username}, but was not found."
+                f"Tried to lookup player: {submit_event.submitting_user}, but was not found."
                 f"Current player list : {self.players}"
             )
 

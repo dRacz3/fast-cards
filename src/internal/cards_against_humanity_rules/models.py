@@ -35,7 +35,7 @@ class GameEvent(BaseModel):
 
 
 class PlayerSubmitCards(GameEvent):
-    username: str
+    submitting_user: str
     cards: List[WhiteCard]
 
 
