@@ -1,4 +1,4 @@
-import uvicorn
+import uvicorn  # type: ignore
 
 from src.application import create_app
 
