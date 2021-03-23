@@ -1,4 +1,5 @@
 import json
+import os
 import random
 from typing import List, Optional, Dict
 
@@ -195,6 +196,7 @@ class GameStateMachine(BaseModel):
         )
 
     def save(self):
+        os.makedirs("temp", exist_ok=True)
         with open(f"temp/{self.room_name}.jsonl", "a") as f:
             json.dump(self.dict(), f)
             f.write("\n")
