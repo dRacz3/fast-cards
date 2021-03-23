@@ -27,18 +27,22 @@ class GameEventProcessor:
     def __init__(self, room_name, db: Session):
         self.session = GameStateMachine.new_session(room_name, round_count=3, db=db)
         self.event_mapping: Dict[Any, Reaction] = {
-            PlayerSubmitCards: Reaction(event_callback=self.session.player_submit_card),
-            SelectWinningSubmission: Reaction(
+            PlayerSubmitCards.event_id(): Reaction(
+                event_callback=self.session.player_submit_card
+            ),
+            SelectWinningSubmission.event_id(): Reaction(
                 event_callback=self.session.select_winner,
                 validation=self.winner_select_validation,
             ),
         }
 
     def on_new_event(self, event: GameEvent, sender_name: str):
-        reaction: Reaction = self.event_mapping[event]
-        if reaction.validation is not None:
-            reaction.validation(event, sender_name)
-        return reaction.event_callback(event, sender_name)
+        if isinstance(event, PlayerSubmitCards):
+            self.session.player_submit_card(event)
+        if isinstance(event, SelectWinningSubmission):
+            self.winner_select_validation(event, sender_name)
+            self.session.select_winner(event)
+        self.session.save()
 
     def winner_select_validation(self, event: GameEvent, sender_name: str):
         tzars = [
@@ -59,11 +63,17 @@ class GameEventMapper:
     def __init__(self):
         self.mapping: Dict[str, GameEventProcessor] = {}
 
-    def get_game(self, room_name) -> GameEventProcessor:
-        return self.mapping[room_name]
+    def get_game(self, room_name) -> Optional[GameEventProcessor]:
+        return self.mapping.get(room_name)
 
-    def new_game(self, session_name: str, db: Session):
-        self.mapping[session_name] = GameEventProcessor(session_name, db)
+    def new_game(self, room_name: str, db: Session) -> GameEventProcessor:
+        self.mapping[room_name] = GameEventProcessor(room_name, db)
+        created_room = self.get_game(room_name)
+        if created_room is None:
+            raise LogicalError(
+                "What? I have just created a game, but it does not exist?!"
+            )
+        return created_room
 
-    def end_game(self, session_name):
-        self.mapping.pop(session_name)
+    def end_game(self, room_name):
+        self.mapping.pop(room_name)

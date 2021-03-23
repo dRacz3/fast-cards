@@ -3,7 +3,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from src.database import database_models
 from src.database.database import engine
-from src.routers import users, cards, websocket_endpoints
+from src.routers import users, cards, websocket_endpoints, game
 from src.config import get_settings
 
 
@@ -25,5 +25,6 @@ def create_app() -> FastAPI:
     app.include_router(users.router)
     app.include_router(cards.router)
     app.include_router(websocket_endpoints.router)
+    app.include_router(game.router)
 
     return app

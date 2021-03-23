@@ -20,6 +20,7 @@ from src.internal.cards_against_humanity_rules.models import (
     CardsAgainstHumanityRoles,
     PlayerSubmitCards,
     SelectWinningSubmission,
+    PlayerOutsideView,
 )
 
 
@@ -194,13 +195,35 @@ class GameStateMachine(BaseModel):
         )
 
     def save(self):
-        pass
-        # with open(f"{self.room_name}.jsonl", "a") as f:
-        #     json.dump(self.dict(), f)
-        #     f.write("\n")
+        with open(f"temp/{self.room_name}.jsonl", "a") as f:
+            json.dump(self.dict(), f)
+            f.write("\n")
 
     def load(self):
         pass
 
     def __hash__(self):
         return hash(str(self.dict()))
+
+
+class GameStatePlayerView(BaseModel):
+    player: CardsAgainstHumanityPlayer
+    room_name: str
+    state: str
+    round_count: int
+    currently_active_card: Optional[BlackCard] = None
+    player_submissions: Dict[str, Submission] = Field(default_factory=dict)
+    other_players: List[PlayerOutsideView]
+
+    @classmethod
+    def from_game_state(cls, s: GameStateMachine, username: str):
+
+        return cls(
+            room_name=s.room_name,
+            state=s.state,
+            round_count=s.round_count,
+            currently_active_card=s.currently_active_card,
+            player_submissions=s.player_submissions,
+            other_players=[PlayerOutsideView.from_player(p) for p in s.players],
+            player=s.player_lookup[username],
+        )

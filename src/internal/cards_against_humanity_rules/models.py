@@ -1,4 +1,4 @@
-from typing import List
+from typing import List, Optional, Dict
 
 from pydantic import BaseModel, Field
 
@@ -33,14 +33,26 @@ class Submission(BaseModel):
 class GameEvent(BaseModel):
     pass
 
+    @staticmethod
+    def event_id() -> int:
+        return -1
+
 
 class PlayerSubmitCards(GameEvent):
     submitting_user: str
     cards: List[WhiteCard]
 
+    @staticmethod
+    def event_id() -> int:
+        return 1
+
 
 class SelectWinningSubmission(GameEvent):
     submission: Submission
+
+    @staticmethod
+    def event_id() -> int:
+        return 2
 
 
 class CardsAgainstHumanityPlayer(BaseModel):
@@ -68,3 +80,14 @@ class CardsAgainstHumanityPlayer(BaseModel):
             raise GameHasEnded(
                 f"Game has ended as {self.username} has reached {POINTS_TO_WIN} points"
             )
+
+
+class PlayerOutsideView(BaseModel):
+    username: str
+    points: int = 0
+    current_role: str = CardsAgainstHumanityRoles.PLAYER
+    submissions: List[Submission] = Field(default_factory=list)
+
+    @classmethod
+    def from_player(cls, player: CardsAgainstHumanityPlayer):
+        return cls(**player.copy(exclude={"cards_in_hand"}).dict())
