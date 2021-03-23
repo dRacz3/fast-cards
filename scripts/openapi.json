@@ -298,6 +298,394 @@
                     }
                 ]
             }
+        },
+        "/ws/": {
+            "get": {
+                "tags": [
+                    "ws"
+                ],
+                "summary": "Get",
+                "operationId": "get_ws__get",
+                "responses": {
+                    "200": {
+                        "description": "Successful Response",
+                        "content": {
+                            "application/json": {
+                                "schema": {}
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/game/new": {
+            "post": {
+                "tags": [
+                    "cards-against"
+                ],
+                "summary": "Create New Game",
+                "operationId": "create_new_game_game_new_post",
+                "parameters": [
+                    {
+                        "required": true,
+                        "schema": {
+                            "title": "Room Name",
+                            "type": "string"
+                        },
+                        "name": "room_name",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful Response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/GameStateMachine"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validation Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/HTTPValidationError"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "JWTBearer": []
+                    }
+                ]
+            }
+        },
+        "/game/join": {
+            "post": {
+                "tags": [
+                    "cards-against"
+                ],
+                "summary": "Join Game",
+                "operationId": "join_game_game_join_post",
+                "parameters": [
+                    {
+                        "required": true,
+                        "schema": {
+                            "title": "Room Name",
+                            "type": "string"
+                        },
+                        "name": "room_name",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful Response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/GameStatePlayerView"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validation Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/HTTPValidationError"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "JWTBearer": []
+                    },
+                    {
+                        "JWTBearer": []
+                    }
+                ]
+            }
+        },
+        "/game/leave": {
+            "post": {
+                "tags": [
+                    "cards-against"
+                ],
+                "summary": "Leave Game",
+                "operationId": "leave_game_game_leave_post",
+                "parameters": [
+                    {
+                        "required": true,
+                        "schema": {
+                            "title": "Room Name",
+                            "type": "string"
+                        },
+                        "name": "room_name",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful Response",
+                        "content": {
+                            "application/json": {
+                                "schema": {}
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validation Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/HTTPValidationError"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "JWTBearer": []
+                    },
+                    {
+                        "JWTBearer": []
+                    }
+                ]
+            }
+        },
+        "/game/submit": {
+            "post": {
+                "tags": [
+                    "cards-against"
+                ],
+                "summary": "Submit Cards",
+                "operationId": "submit_cards_game_submit_post",
+                "parameters": [
+                    {
+                        "required": true,
+                        "schema": {
+                            "title": "Room Name",
+                            "type": "string"
+                        },
+                        "name": "room_name",
+                        "in": "query"
+                    }
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "title": "Cards",
+                                "type": "array",
+                                "items": {
+                                    "$ref": "#/components/schemas/WhiteCard"
+                                }
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "responses": {
+                    "200": {
+                        "description": "Successful Response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/GameStatePlayerView"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validation Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/HTTPValidationError"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "JWTBearer": []
+                    },
+                    {
+                        "JWTBearer": []
+                    }
+                ]
+            }
+        },
+        "/game/selectwinner": {
+            "post": {
+                "tags": [
+                    "cards-against"
+                ],
+                "summary": "Select Winner",
+                "operationId": "select_winner_game_selectwinner_post",
+                "parameters": [
+                    {
+                        "required": true,
+                        "schema": {
+                            "title": "Room Name",
+                            "type": "string"
+                        },
+                        "name": "room_name",
+                        "in": "query"
+                    }
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/SelectWinningSubmission"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "responses": {
+                    "200": {
+                        "description": "Successful Response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/GameStatePlayerView"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validation Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/HTTPValidationError"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "JWTBearer": []
+                    },
+                    {
+                        "JWTBearer": []
+                    }
+                ]
+            }
+        },
+        "/game/start_game": {
+            "post": {
+                "tags": [
+                    "cards-against"
+                ],
+                "summary": "Start Game",
+                "operationId": "start_game_game_start_game_post",
+                "parameters": [
+                    {
+                        "required": true,
+                        "schema": {
+                            "title": "Room Name",
+                            "type": "string"
+                        },
+                        "name": "room_name",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful Response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/GameStatePlayerView"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validation Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/HTTPValidationError"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "JWTBearer": []
+                    },
+                    {
+                        "JWTBearer": []
+                    }
+                ]
+            }
+        },
+        "/game/refresh": {
+            "get": {
+                "tags": [
+                    "cards-against"
+                ],
+                "summary": "Refresh",
+                "operationId": "refresh_game_refresh_get",
+                "parameters": [
+                    {
+                        "required": true,
+                        "schema": {
+                            "title": "Room Name",
+                            "type": "string"
+                        },
+                        "name": "room_name",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful Response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/GameStatePlayerView"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validation Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/HTTPValidationError"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "JWTBearer": []
+                    },
+                    {
+                        "JWTBearer": []
+                    }
+                ]
+            }
         }
     },
     "components": {
@@ -335,6 +723,145 @@
                     }
                 }
             },
+            "CardsAgainstHumanityPlayer": {
+                "title": "CardsAgainstHumanityPlayer",
+                "required": [
+                    "username",
+                    "cards_in_hand"
+                ],
+                "type": "object",
+                "properties": {
+                    "username": {
+                        "title": "Username",
+                        "type": "string"
+                    },
+                    "cards_in_hand": {
+                        "title": "Cards In Hand",
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/WhiteCard"
+                        }
+                    },
+                    "points": {
+                        "title": "Points",
+                        "type": "integer",
+                        "default": 0
+                    },
+                    "current_role": {
+                        "title": "Current Role",
+                        "type": "string",
+                        "default": "PLAYER"
+                    },
+                    "submissions": {
+                        "title": "Submissions",
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/Submission"
+                        }
+                    }
+                }
+            },
+            "GameStateMachine": {
+                "title": "GameStateMachine",
+                "required": [
+                    "room_name",
+                    "black_cards",
+                    "white_cards"
+                ],
+                "type": "object",
+                "properties": {
+                    "room_name": {
+                        "title": "Room Name",
+                        "type": "string"
+                    },
+                    "black_cards": {
+                        "title": "Black Cards",
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/BlackCard"
+                        }
+                    },
+                    "white_cards": {
+                        "title": "White Cards",
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/WhiteCard"
+                        }
+                    },
+                    "state": {
+                        "title": "State",
+                        "type": "string",
+                        "default": "STARTING"
+                    },
+                    "round_count": {
+                        "title": "Round Count",
+                        "type": "integer",
+                        "default": 0
+                    },
+                    "currently_active_card": {
+                        "$ref": "#/components/schemas/BlackCard"
+                    },
+                    "player_submissions": {
+                        "title": "Player Submissions",
+                        "type": "object",
+                        "additionalProperties": {
+                            "$ref": "#/components/schemas/Submission"
+                        }
+                    },
+                    "player_lookup": {
+                        "title": "Player Lookup",
+                        "type": "object",
+                        "additionalProperties": {
+                            "$ref": "#/components/schemas/CardsAgainstHumanityPlayer"
+                        }
+                    }
+                }
+            },
+            "GameStatePlayerView": {
+                "title": "GameStatePlayerView",
+                "required": [
+                    "player",
+                    "room_name",
+                    "state",
+                    "round_count",
+                    "other_players"
+                ],
+                "type": "object",
+                "properties": {
+                    "player": {
+                        "$ref": "#/components/schemas/CardsAgainstHumanityPlayer"
+                    },
+                    "room_name": {
+                        "title": "Room Name",
+                        "type": "string"
+                    },
+                    "state": {
+                        "title": "State",
+                        "type": "string"
+                    },
+                    "round_count": {
+                        "title": "Round Count",
+                        "type": "integer"
+                    },
+                    "currently_active_card": {
+                        "$ref": "#/components/schemas/BlackCard"
+                    },
+                    "player_submissions": {
+                        "title": "Player Submissions",
+                        "type": "object",
+                        "additionalProperties": {
+                            "$ref": "#/components/schemas/Submission"
+                        }
+                    },
+                    "other_players": {
+                        "title": "Other Players",
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/PlayerOutsideView"
+                        }
+                    }
+                }
+            },
             "HTTPValidationError": {
                 "title": "HTTPValidationError",
                 "type": "object",
@@ -362,6 +889,68 @@
                 },
                 "example": {
                     "detail": "The reason why the authenticaion failed"
+                }
+            },
+            "PlayerOutsideView": {
+                "title": "PlayerOutsideView",
+                "required": [
+                    "username"
+                ],
+                "type": "object",
+                "properties": {
+                    "username": {
+                        "title": "Username",
+                        "type": "string"
+                    },
+                    "points": {
+                        "title": "Points",
+                        "type": "integer",
+                        "default": 0
+                    },
+                    "current_role": {
+                        "title": "Current Role",
+                        "type": "string",
+                        "default": "PLAYER"
+                    },
+                    "submissions": {
+                        "title": "Submissions",
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/Submission"
+                        }
+                    }
+                }
+            },
+            "SelectWinningSubmission": {
+                "title": "SelectWinningSubmission",
+                "required": [
+                    "submission"
+                ],
+                "type": "object",
+                "properties": {
+                    "submission": {
+                        "$ref": "#/components/schemas/Submission"
+                    }
+                }
+            },
+            "Submission": {
+                "title": "Submission",
+                "required": [
+                    "black_card",
+                    "white_cards"
+                ],
+                "type": "object",
+                "properties": {
+                    "black_card": {
+                        "$ref": "#/components/schemas/BlackCard"
+                    },
+                    "white_cards": {
+                        "title": "White Cards",
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/WhiteCard"
+                        }
+                    }
                 }
             },
             "TokenResponse": {
