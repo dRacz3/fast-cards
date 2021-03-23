@@ -1,8 +1,12 @@
 from dataclasses import dataclass, field
-from typing import List, Dict
+from typing import List, Dict, Optional
 
 from fastapi.websockets import WebSocket
 from starlette import status
+
+from src.internal.cards_against_humanity_rules.game_state_machine import (
+    GameStateMachine,
+)
 
 
 @dataclass
@@ -10,6 +14,7 @@ class Room:
     room_name: str
     host_user: str
     connections: Dict[str, List[WebSocket]] = field(default_factory=dict)
+    game_state_machine: Optional[GameStateMachine] = None
 
     def add_user_to_room(self, user: str, connection: WebSocket):
         print(f"Trying to add user {user} to room")

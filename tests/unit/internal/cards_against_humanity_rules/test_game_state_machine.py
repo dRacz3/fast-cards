@@ -7,8 +7,10 @@ from src.internal.cards_against_humanity_rules.game_related_exceptions import (
     LogicalError,
     GameHasEnded,
 )
+from src.internal.cards_against_humanity_rules.game_state_machine import (
+    GameStateMachine,
+)
 from src.internal.cards_against_humanity_rules.models import (
-    GameSession,
     CARDS_IN_PLAYER_HAND,
     GameStates,
     CardsAgainstHumanityRoles,
@@ -22,7 +24,7 @@ from src.internal.cards_against_humanity_rules.models import (
 def default_game_with_3_players(database_connection, prefill_cards_to_database):
     prefill_cards_to_database()
     db = database_connection
-    sess = GameSession.new_session("test", 5, db)
+    sess = GameStateMachine.new_session("test", 5, db)
     ### STARTING GAME PHASE ######
     assert not sess.start_game()
     assert sess.state == GameStates.STARTING
@@ -38,7 +40,7 @@ def test_game_session_creation_and_user_assignment(
 ):
     prefill_cards_to_database()
     db = database_connection
-    sess = GameSession.new_session("test", 5, db)
+    sess = GameStateMachine.new_session("test", 5, db)
     assert len(sess.players) == 0
     assert len(sess.black_cards) == 5
     assert len(sess.white_cards) > 15
@@ -66,7 +68,7 @@ def test_game_starts_only_with_enough_players(
 ):
     prefill_cards_to_database()
     db = database_connection
-    sess = GameSession.new_session("test", 5, db)
+    sess = GameStateMachine.new_session("test", 5, db)
     ### STARTING GAME PHASE ######
     assert not sess.start_game()
     assert sess.state == GameStates.STARTING
@@ -127,7 +129,7 @@ def test_game_starts_only_with_enough_players(
 def test_invalid_player_action_when_player_tries_to_submit_cards(
     default_game_with_3_players,
 ):
-    sess: GameSession = default_game_with_3_players
+    sess: GameStateMachine = default_game_with_3_players
     with pytest.raises(InvalidPlayerAction):
         sess.player_submit_card(
             sess.players[0].username, sess.players[0].cards_in_hand[0:1]
@@ -137,7 +139,7 @@ def test_invalid_player_action_when_player_tries_to_submit_cards(
 def test_invalid_player_action_when_player_tries_to_submit_cards_wrong_number(
     default_game_with_3_players,
 ):
-    sess: GameSession = default_game_with_3_players
+    sess: GameStateMachine = default_game_with_3_players
 
     assert sess.start_game()
     assert sess.state == GameStates.PLAYERS_SUBMITTING_CARDS
@@ -151,7 +153,7 @@ def test_invalid_player_action_when_player_tries_to_submit_cards_wrong_number(
 
 
 def test_logical_error_when_non_existing_palyer_submits(default_game_with_3_players):
-    sess: GameSession = default_game_with_3_players
+    sess: GameStateMachine = default_game_with_3_players
 
     assert sess.start_game()
     assert sess.state == GameStates.PLAYERS_SUBMITTING_CARDS
@@ -166,7 +168,7 @@ def test_logical_error_when_non_existing_palyer_submits(default_game_with_3_play
 def test_invalid_player_action_when_submitting_not_owned_cards(
     default_game_with_3_players,
 ):
-    sess: GameSession = default_game_with_3_players
+    sess: GameStateMachine = default_game_with_3_players
 
     assert sess.start_game()
     assert sess.state == GameStates.PLAYERS_SUBMITTING_CARDS
@@ -187,7 +189,7 @@ def test_invalid_player_action_when_submitting_not_owned_cards(
 def test_logical_error_when_selected_winner_submission_does_not_exist(
     default_game_with_3_players,
 ):
-    sess: GameSession = default_game_with_3_players
+    sess: GameStateMachine = default_game_with_3_players
 
     assert sess.start_game()
     assert sess.state == GameStates.PLAYERS_SUBMITTING_CARDS
@@ -211,7 +213,7 @@ def test_logical_error_when_selected_winner_submission_does_not_exist(
 
 
 def test_game_has_ended_when_ran_out_of_black_cards(default_game_with_3_players):
-    sess: GameSession = default_game_with_3_players
+    sess: GameStateMachine = default_game_with_3_players
 
     assert sess.start_game()
     assert sess.state == GameStates.PLAYERS_SUBMITTING_CARDS
@@ -235,7 +237,7 @@ def test_game_has_ended_when_ran_out_of_black_cards(default_game_with_3_players)
 
 
 def test_game_has_ended_when_ran_out_of_white_cards(default_game_with_3_players):
-    sess: GameSession = default_game_with_3_players
+    sess: GameStateMachine = default_game_with_3_players
 
     assert sess.start_game()
     assert sess.state == GameStates.PLAYERS_SUBMITTING_CARDS
@@ -261,7 +263,7 @@ def test_game_has_ended_when_ran_out_of_white_cards(default_game_with_3_players)
 
 
 def test_game_has_ended_when_player_reached_points_to_win(default_game_with_3_players):
-    sess: GameSession = default_game_with_3_players
+    sess: GameStateMachine = default_game_with_3_players
 
     assert sess.start_game()
     assert sess.state == GameStates.PLAYERS_SUBMITTING_CARDS

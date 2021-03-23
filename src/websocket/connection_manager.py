@@ -3,6 +3,9 @@ from typing import Optional, Dict
 
 from fastapi import Cookie, Query, WebSocket, status
 
+from src.internal.cards_against_humanity_rules.game_state_machine import (
+    GameStateMachine,
+)
 from src.websocket.models import Room, WebSocketMessage
 
 
@@ -24,6 +27,7 @@ async def get_cookie_or_token(
 class ConnectionManager:
     def __init__(self):
         self.active_rooms: Dict[str, Room] = {}
+        self.sessions: Dict[Room, GameStateMachine] = {}
 
     async def connect(self, room_name: str, username: str, websocket: WebSocket):
         room = self.active_rooms.get(room_name)
