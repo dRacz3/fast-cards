@@ -105,16 +105,16 @@ class GameStateMachine(BaseModel):
                 f"Current player list : {self.players}"
             )
 
-    def select_winner(self, selected_submission: Submission):
+    def select_winner(self, winner: SelectWinningSubmission):
         for player, submission in self.player_submissions.items():
-            if submission == selected_submission:
+            if submission == winner.submission:
                 player.reward_points(1)
                 self.__start_new_round()
                 return
 
         raise InvalidPlayerAction(
             f"Selected submission does not exist! "
-            f"Selected: {selected_submission}, "
+            f"Selected: {winner.submission}, "
             f"Player submissions: {self.player_submissions}"
         )
 

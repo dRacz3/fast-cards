@@ -40,7 +40,7 @@ class PlayerSubmitCards(GameEvent):
 
 
 class SelectWinningSubmission(GameEvent):
-    selected_submission: Submission
+    submission: Submission
 
 
 class CardsAgainstHumanityPlayer(BaseModel):
