@@ -2,7 +2,7 @@ from tests.conftest import default_header_with_x_token, default_header
 
 
 def test_get_all_users(valid_user_token, test_client):
-    token = valid_user_token
+    token = valid_user_token()
     response = test_client.get("/auth/", headers=default_header_with_x_token(token))
 
     assert response.status_code == 200, f"failure: {response.content.decode()}"

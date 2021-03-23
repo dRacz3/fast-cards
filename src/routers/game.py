@@ -28,7 +28,17 @@ router = APIRouter(
 )
 
 
-@router.post("/new", response_model=GameStateMachine)
+class GameEndpoints:
+    NEW = "new"
+    JOIN = "join"
+    START_GAME = "start_game"
+    SUBMIT = "submit"
+    SELECTWINNER = "selectwinner"
+    LEAVE = "leave"
+    REFRESH = "refresh"
+
+
+@router.post(f"/{GameEndpoints.NEW}", response_model=GameStateMachine)
 def create_new_game(
     room_name: str,
     game_mapper: GameEventMapper = Depends(get_game_mapper),
@@ -39,7 +49,7 @@ def create_new_game(
     return game_mapper.new_game(room_name, db).session.dict()
 
 
-@router.post("/join", response_model=GameStatePlayerView)
+@router.post(f"/{GameEndpoints.JOIN}", response_model=GameStatePlayerView)
 def join_game(
     room_name: str,
     game_mapper: GameEventMapper = Depends(get_game_mapper),
@@ -57,7 +67,7 @@ def join_game(
     return GameStatePlayerView.from_game_state(room.session, user.user_id)
 
 
-@router.post("/leave")
+@router.post(f"/{GameEndpoints.LEAVE}")
 def leave_game(
     room_name: str,
     game_mapper: GameEventMapper = Depends(get_game_mapper),
@@ -74,7 +84,7 @@ def leave_game(
     return 200, "OK"
 
 
-@router.post("/submit", response_model=GameStatePlayerView)
+@router.post(f"/{GameEndpoints.SUBMIT}", response_model=GameStatePlayerView)
 def submit_cards(
     room_name: str,
     cards: List[WhiteCard],
@@ -95,7 +105,7 @@ def submit_cards(
     return GameStatePlayerView.from_game_state(room.session, user.user_id)
 
 
-@router.post("/selectwinner", response_model=GameStatePlayerView)
+@router.post(f"/{GameEndpoints.SELECTWINNER}", response_model=GameStatePlayerView)
 def select_winner(
     room_name: str,
     winner: SelectWinningSubmission,
@@ -113,7 +123,7 @@ def select_winner(
     return GameStatePlayerView.from_game_state(room.session, user.user_id)
 
 
-@router.post("/start_game", response_model=GameStatePlayerView)
+@router.post(f"/{GameEndpoints.START_GAME}", response_model=GameStatePlayerView)
 def start_game(
     room_name: str,
     game_mapper: GameEventMapper = Depends(get_game_mapper),
@@ -130,7 +140,7 @@ def start_game(
     return GameStatePlayerView.from_game_state(room.session, user.user_id)
 
 
-@router.get("/refresh", response_model=GameStatePlayerView)
+@router.get(f"/{GameEndpoints.REFRESH}", response_model=GameStatePlayerView)
 def refresh(
     room_name: str,
     game_mapper: GameEventMapper = Depends(get_game_mapper),

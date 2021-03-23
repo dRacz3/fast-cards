@@ -5,6 +5,7 @@ from sqlalchemy.orm import Session
 from starlette.testclient import TestClient
 
 import src.application
+from src.dependencies import get_game_mapper
 from src.utils.bootstrapping import load_cards_to_dabase
 from src.database.database import SessionLocal
 from src.database.database_models import User
@@ -64,10 +65,20 @@ def test_client():
 
 @pytest.fixture()
 def valid_user_token(test_client):
-    response = test_client.post(
-        "/auth/signup",
-        json={"username": "test_user", "email": "user@test.com", "password": "nah"},
-        headers={"content-type": "application/json"},
-    )
-    assert response.status_code == 200
-    yield response.json()["access_token"]
+
+    def _register(username : str = "test_user"):
+        response = test_client.post(
+            "/auth/signup",
+            json={"username": username, "email": f"{username}@test.com", "password": "nah"},
+            headers={"content-type": "application/json"},
+        )
+        assert response.status_code == 200
+        return response.json()["access_token"]
+    yield _register
+
+
+@pytest.fixture()
+def get_clean_game_mapper():
+    mapper = next(get_game_mapper())
+    yield mapper
+    mapper.mapping.clear()

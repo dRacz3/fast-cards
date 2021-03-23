@@ -62,15 +62,14 @@ class GameStateMachine(BaseModel):
         if player_to_remove is not None:
             self.player_lookup.pop(player_to_remove.username)
 
-    def start_game(self) -> bool:
+    def start_game(self):
         if len(self.players) >= 2:
             self.players[0].elect_as_tzar()
             self.__next_active_black_card()
             self.state = GameStates.PLAYERS_SUBMITTING_CARDS
             self.save()
-            return True
         else:
-            return False
+            raise InvalidPlayerAction(f"Game cannot be started without enough players!. Current players: {self.player_lookup}")
 
     def player_submit_card(self, submit_event: PlayerSubmitCards):
         if self.currently_active_card is None:

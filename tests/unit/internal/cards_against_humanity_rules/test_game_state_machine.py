@@ -28,7 +28,8 @@ def default_game_with_3_players(database_connection, prefill_cards_to_database):
     db = database_connection
     sess = GameStateMachine.new_session("test", 5, db)
     ### STARTING GAME PHASE ######
-    assert not sess.start_game()
+    with pytest.raises(InvalidPlayerAction):
+        sess.start_game()
     assert sess.state == GameStates.STARTING
 
     sess.player_join("Joe")
@@ -72,14 +73,15 @@ def test_game_starts_only_with_enough_players(
     db = database_connection
     sess: GameStateMachine = GameStateMachine.new_session("test", 5, db)
     ### STARTING GAME PHASE ######
-    assert not sess.start_game()
+    with pytest.raises(InvalidPlayerAction):
+        sess.start_game()
     assert sess.state == GameStates.STARTING
 
     sess.player_join("Joe")
     sess.player_join("David")
     sess.player_join("Peter")
 
-    assert sess.start_game()
+    sess.start_game()
     assert sess.state == GameStates.PLAYERS_SUBMITTING_CARDS
 
     assert sess.currently_active_card.pick is not None
@@ -149,7 +151,7 @@ def test_invalid_player_action_when_player_tries_to_submit_cards_wrong_number(
 ):
     sess: GameStateMachine = default_game_with_3_players
 
-    assert sess.start_game()
+    sess.start_game()
     assert sess.state == GameStates.PLAYERS_SUBMITTING_CARDS
 
     expected_card_count = sess.currently_active_card.pick
@@ -165,7 +167,7 @@ def test_invalid_player_action_when_player_tries_to_submit_cards_wrong_number(
 def test_logical_error_when_non_existing_palyer_submits(default_game_with_3_players):
     sess: GameStateMachine = default_game_with_3_players
 
-    assert sess.start_game()
+    sess.start_game()
     assert sess.state == GameStates.PLAYERS_SUBMITTING_CARDS
 
     expected_card_count = sess.currently_active_card.pick
@@ -183,7 +185,7 @@ def test_invalid_player_action_when_submitting_not_owned_cards(
 ):
     sess: GameStateMachine = default_game_with_3_players
 
-    assert sess.start_game()
+    sess.start_game()
     assert sess.state == GameStates.PLAYERS_SUBMITTING_CARDS
 
     normal_players = [
@@ -206,7 +208,7 @@ def test_logical_error_when_selected_winner_submission_does_not_exist(
 ):
     sess: GameStateMachine = default_game_with_3_players
 
-    assert sess.start_game()
+    sess.start_game()
     assert sess.state == GameStates.PLAYERS_SUBMITTING_CARDS
 
     normal_players = [
@@ -235,7 +237,7 @@ def test_logical_error_when_selected_winner_submission_does_not_exist(
 def test_game_has_ended_when_ran_out_of_black_cards(default_game_with_3_players):
     sess: GameStateMachine = default_game_with_3_players
 
-    assert sess.start_game()
+    sess.start_game()
     assert sess.state == GameStates.PLAYERS_SUBMITTING_CARDS
     sess.black_cards = []  # Manually removing leftover black cards from session
 
@@ -262,7 +264,7 @@ def test_game_has_ended_when_ran_out_of_black_cards(default_game_with_3_players)
 def test_game_has_ended_when_ran_out_of_white_cards(default_game_with_3_players):
     sess: GameStateMachine = default_game_with_3_players
 
-    assert sess.start_game()
+    sess.start_game()
     assert sess.state == GameStates.PLAYERS_SUBMITTING_CARDS
     sess.white_cards = [
         sess.white_cards[-1]
@@ -291,7 +293,7 @@ def test_game_has_ended_when_ran_out_of_white_cards(default_game_with_3_players)
 def test_game_has_ended_when_player_reached_points_to_win(default_game_with_3_players):
     sess: GameStateMachine = default_game_with_3_players
 
-    assert sess.start_game()
+    sess.start_game()
     assert sess.state == GameStates.PLAYERS_SUBMITTING_CARDS
 
     normal_players = [

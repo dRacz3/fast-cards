@@ -1,5 +1,5 @@
 def test_get_white_cards(valid_user_token, test_client):
-    token = valid_user_token
+    token = valid_user_token()
     headers = {
         "accept": "application/json",
         "Authorization": f"Bearer {token}",
@@ -21,7 +21,7 @@ def test_get_white_cards(valid_user_token, test_client):
 
 
 def test_get_black_cards(valid_user_token, test_client):
-    token = valid_user_token
+    token = valid_user_token()
     headers = {
         "accept": "application/json",
         "Authorization": f"Bearer {token}",

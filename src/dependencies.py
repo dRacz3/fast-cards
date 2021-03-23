@@ -21,7 +21,7 @@ manager = ConnectionManager()
 game_mapper = GameEventMapper()
 
 
-def get_game_mapper():
+def get_game_mapper() -> GameEventMapper:
     yield game_mapper
 
 
