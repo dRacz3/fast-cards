@@ -1,3 +1,4 @@
+import json
 import random
 from typing import List, Optional, Dict
 
@@ -32,10 +33,13 @@ class GameStateMachine(BaseModel):
     round_count: int = 0
 
     currently_active_card: Optional[BlackCard] = None
-    players: List[CardsAgainstHumanityPlayer] = Field(default_factory=list)
-    player_submissions: Dict[CardsAgainstHumanityPlayer, Submission] = Field(
-        default_factory=dict
-    )
+    player_submissions: Dict[str, Submission] = Field(default_factory=dict)
+
+    player_lookup: Dict[str, CardsAgainstHumanityPlayer] = Field(default_factory=dict)
+
+    @property
+    def players(self) -> List[CardsAgainstHumanityPlayer]:
+        return list(self.player_lookup.values())
 
     def player_join(self, username: str):
         white_cards_for_player = self.white_cards[0:CARDS_IN_PLAYER_HAND]
@@ -46,7 +50,7 @@ class GameStateMachine(BaseModel):
         for c in white_cards_for_player:
             self.white_cards.remove(c)
 
-        self.players.append(new_player)
+        self.player_lookup[new_player.username] = new_player
 
     def player_leaves(self, username: str):
         player_to_remove = None
@@ -54,13 +58,14 @@ class GameStateMachine(BaseModel):
             if p.username == username:
                 player_to_remove = p
         if player_to_remove is not None:
-            self.players.remove(player_to_remove)
+            self.player_lookup.pop(player_to_remove.username)
 
     def start_game(self) -> bool:
         if len(self.players) >= 2:
             self.players[0].elect_as_tzar()
             self.__next_active_black_card()
             self.state = GameStates.PLAYERS_SUBMITTING_CARDS
+            self.save()
             return True
         else:
             return False
@@ -86,11 +91,19 @@ class GameStateMachine(BaseModel):
                     f"{submit_event.submitting_user} tried to submit cards, that are not in hands!"
                 )
 
+            if self.player_submissions.get(player.username) is not None:
+                # Potential optimization here, could replace the submission,
+                # and return cards to user hand from previous submission, allowing to overwrite it.
+                # For now its not possible.
+                raise InvalidPlayerAction(
+                    f"{submit_event.submitting_user} tried to submit cards more than once."
+                )
+
             submission = Submission(
                 white_cards=submit_event.cards, black_card=self.currently_active_card
             )
             player.submissions.append(submission)
-            self.player_submissions[player] = submission
+            self.player_submissions[player.username] = submission
             for card in submit_event.cards:
                 player.cards_in_hand.remove(card)
 
@@ -106,8 +119,14 @@ class GameStateMachine(BaseModel):
             )
 
     def select_winner(self, winner: SelectWinningSubmission):
-        for player, submission in self.player_submissions.items():
+        for username, submission in self.player_submissions.items():
             if submission == winner.submission:
+                player = self.__lookup_player_by_name(username)
+                if player is None:
+                    raise LogicalError(
+                        "Selected submission belongs to a player that is not in the game anymore."
+                    )
+
                 player.reward_points(1)
                 self.__start_new_round()
                 return
@@ -121,10 +140,7 @@ class GameStateMachine(BaseModel):
     def __lookup_player_by_name(
         self, username: str
     ) -> Optional[CardsAgainstHumanityPlayer]:
-        for p in self.players:
-            if p.username == username:
-                return p
-        return None
+        return self.player_lookup.get(username)
 
     def __next_active_black_card(self):
         if len(self.black_cards) == 0:
@@ -132,6 +148,7 @@ class GameStateMachine(BaseModel):
         self.currently_active_card = self.black_cards.pop()
 
     def __close_round(self):
+        self.save()
         self.state = GameStates.TZAR_CHOOSING_WINNER
 
     def __start_new_round(self):
@@ -162,6 +179,7 @@ class GameStateMachine(BaseModel):
         )
         self.__revert_everyone_to_normal_player()
         player.elect_as_tzar()
+        self.save()
 
     def __revert_everyone_to_normal_player(self):
         for p in self.players:
@@ -174,6 +192,15 @@ class GameStateMachine(BaseModel):
             white_cards=get_n_random_white_cards(db, round_count * 15),
             black_cards=get_n_random_black_cards(db, round_count),
         )
+
+    def save(self):
+        pass
+        # with open(f"{self.room_name}.jsonl", "a") as f:
+        #     json.dump(self.dict(), f)
+        #     f.write("\n")
+
+    def load(self):
+        pass
 
     def __hash__(self):
         return hash(str(self.dict()))
