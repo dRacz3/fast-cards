@@ -19,7 +19,6 @@ from src.internal.cards_against_humanity_rules.game_state_machine import (
 from src.internal.cards_against_humanity_rules.models import (
     PlayerSubmitCards,
     SelectWinningSubmission,
-    Submission,
 )
 
 router = APIRouter(
@@ -71,7 +70,7 @@ def leave_game(
     if room is None:
         raise HTTPException(404, "Room does not exist.")
 
-    game_mapper.get_game(room_name).session.player_leaves(user.user_id)
+    room.session.player_leaves(user.user_id)
     return 200, "OK"
 
 
@@ -128,4 +127,19 @@ def start_game(
         raise HTTPException(404, "Room does not exist.")
 
     room.session.start_game()
+    return GameStatePlayerView.from_game_state(room.session, user.user_id)
+
+
+@router.get("/refresh", response_model=GameStatePlayerView)
+def refresh(
+    room_name: str,
+    game_mapper: GameEventMapper = Depends(get_game_mapper),
+    token: str = Depends(JWTBearer()),
+):
+    user = decodeJWT(token)
+    if user is None:
+        raise HTTPException(404, "User not found with this token.")
+    room = game_mapper.get_game(room_name)
+    if room is None:
+        raise HTTPException(404, "Room does not exist.")
     return GameStatePlayerView.from_game_state(room.session, user.user_id)
