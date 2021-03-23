@@ -23,6 +23,9 @@ jobs:
     - name: Test with pytest
       run: |
         pytest --junitxml=junit/test-results-${{ matrix.python-version }}.xml --cov=src --cov-report=xml --cov-report=html
+    - name: Linter and Format
+      run: |
+        make lnf
     - name: Upload pytest test results
       uses: actions/upload-artifact@v2
       with:
