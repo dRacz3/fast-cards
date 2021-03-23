@@ -1,3 +1,2 @@
 # Fast Cards
-
-[![Coverage Status](https://coveralls.io/repos/github/dRacz3/fast-cards/badge.svg?branch=master)](https://coveralls.io/github/dRacz3/fast-cards?branch=master)
+[![Tests](https://github.com/dRacz3/fast-cards/actions/workflows/main.yml/badge.svg)](https://github.com/dRacz3/fast-cards/actions/workflows/main.yml)
