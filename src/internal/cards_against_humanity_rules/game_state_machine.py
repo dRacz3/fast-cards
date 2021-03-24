@@ -57,15 +57,16 @@ class GameStateMachine(BaseModel):
         return None
 
     def player_join(self, username: str):
-        white_cards_for_player = self.white_cards[0:CARDS_IN_PLAYER_HAND]
+        if self.player_lookup.get(username) is None:
+            white_cards_for_player = self.white_cards[0:CARDS_IN_PLAYER_HAND]
 
-        new_player = CardsAgainstHumanityPlayer(
-            username=username, cards_in_hand=white_cards_for_player, points=0
-        )
-        for c in white_cards_for_player:
-            self.white_cards.remove(c)
+            new_player = CardsAgainstHumanityPlayer(
+                username=username, cards_in_hand=white_cards_for_player, points=0
+            )
+            for c in white_cards_for_player:
+                self.white_cards.remove(c)
 
-        self.player_lookup[new_player.username] = new_player
+            self.player_lookup[new_player.username] = new_player
 
     def player_leaves(self, username: str):
         player_to_remove = None
