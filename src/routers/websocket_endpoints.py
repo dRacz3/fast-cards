@@ -1,6 +1,7 @@
 from fastapi import Depends, WebSocket, APIRouter
 from fastapi.responses import HTMLResponse
 from sqlalchemy.orm import Session
+from starlette.responses import JSONResponse
 from starlette.websockets import WebSocketDisconnect
 
 from src.auth.auth_handler import decodeJWT
@@ -52,11 +53,11 @@ router = APIRouter(
     tags=["ws"],
 )
 
-
-@router.get("/")
-async def get():
-    return HTMLResponse(html)
-
+#
+# @router.get("/",)
+# async def get():
+#     return HTMLResponse(html)
+#
 
 @router.websocket("/ws/{room_name}/{token}")
 async def websocket_endpoint(

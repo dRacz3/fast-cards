@@ -299,25 +299,6 @@
                 ]
             }
         },
-        "/ws/": {
-            "get": {
-                "tags": [
-                    "ws"
-                ],
-                "summary": "Get",
-                "operationId": "get_ws__get",
-                "responses": {
-                    "200": {
-                        "description": "Successful Response",
-                        "content": {
-                            "application/json": {
-                                "schema": {}
-                            }
-                        }
-                    }
-                }
-            }
-        },
         "/game/new": {
             "post": {
                 "tags": [
@@ -438,7 +419,9 @@
                         "description": "Successful Response",
                         "content": {
                             "application/json": {
-                                "schema": {}
+                                "schema": {
+                                    "$ref": "#/components/schemas/LeaveResponse"
+                                }
                             }
                         }
                     },
@@ -874,6 +857,11 @@
                         }
                     }
                 }
+            },
+            "LeaveResponse": {
+                "title": "LeaveResponse",
+                "type": "object",
+                "properties": {}
             },
             "LoginFailureMessage": {
                 "title": "LoginFailureMessage",

@@ -1,6 +1,7 @@
 from typing import List
 
 from fastapi import APIRouter, HTTPException, Depends
+from pydantic import BaseModel
 from sqlalchemy.orm import Session
 
 from src.auth.auth_handler import decodeJWT
@@ -38,6 +39,9 @@ class GameEndpoints:
     REFRESH = "refresh"
 
 
+class LeaveResponse(BaseModel):
+    pass
+
 @router.post(f"/{GameEndpoints.NEW}", response_model=GameStateMachine)
 def create_new_game(
     room_name: str,
@@ -67,7 +71,7 @@ def join_game(
     return GameStatePlayerView.from_game_state(room.session, user.user_id)
 
 
-@router.post(f"/{GameEndpoints.LEAVE}")
+@router.post(f"/{GameEndpoints.LEAVE}", response_model=LeaveResponse)
 def leave_game(
     room_name: str,
     game_mapper: GameEventMapper = Depends(get_game_mapper),
@@ -81,7 +85,7 @@ def leave_game(
         raise HTTPException(404, "Room does not exist.")
 
     room.session.player_leaves(user.user_id)
-    return 200, "OK"
+    return LeaveResponse()
 
 
 @router.post(f"/{GameEndpoints.SUBMIT}", response_model=GameStatePlayerView)

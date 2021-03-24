@@ -24,7 +24,7 @@ class Reaction:
 
 
 class GameEventProcessor:
-    def __init__(self, room_name, db: Session):
+    def __init__(self, room_name, db: Session, **kwargs):
         self.session = GameStateMachine.new_session(room_name, round_count=3, db=db)
         self.event_mapping: Dict[Any, Reaction] = {
             PlayerSubmitCards.event_id(): Reaction(

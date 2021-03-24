@@ -43,6 +43,19 @@ class GameStateMachine(BaseModel):
     def players(self) -> List[CardsAgainstHumanityPlayer]:
         return list(self.player_lookup.values())
 
+    @property
+    def tzar(self) -> Optional[CardsAgainstHumanityPlayer]:
+        # Untested
+        # Unused
+        tzars = [
+            p for p in self.players if p.current_role == CardsAgainstHumanityRoles.TZAR
+        ]
+        if len(tzars) == 1:
+            return tzars[0]
+        elif len(tzars) > 1:
+            raise LogicalError(f"Cannot be more than 1 Tzar! Current tzars: {tzars}")
+        return None
+
     def player_join(self, username: str):
         white_cards_for_player = self.white_cards[0:CARDS_IN_PLAYER_HAND]
 
@@ -157,6 +170,7 @@ class GameStateMachine(BaseModel):
     def __start_new_round(self):
         self.round_count += 1
         print(f"Starting a new round #{self.round_count}")
+        self.state = GameStates.PLAYERS_SUBMITTING_CARDS
         self.player_submissions.clear()
         self.__next_active_black_card()
         for p in self.players:
@@ -189,7 +203,7 @@ class GameStateMachine(BaseModel):
             p.revert_to_normal_player()
 
     @classmethod
-    def new_session(cls, room_name: str, round_count: int, db: Session):
+    def new_session(cls, room_name: str, round_count: int, db: Session, **kwargs):
         return cls(
             room_name=room_name,
             white_cards=get_n_random_white_cards(db, round_count * 15),
@@ -230,3 +244,6 @@ class GameStatePlayerView(BaseModel):
             other_players=[PlayerOutsideView.from_player(p) for p in s.players],
             player=s.player_lookup[username],
         )
+
+    def __hash__(self):
+        return hash(str(self.dict()))

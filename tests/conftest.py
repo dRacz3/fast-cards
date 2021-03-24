@@ -5,10 +5,10 @@ from sqlalchemy.orm import Session
 from starlette.testclient import TestClient
 
 import src.application
-from src.dependencies import get_game_mapper
-from src.utils.bootstrapping import load_cards_to_dabase
 from src.database.database import SessionLocal
 from src.database.database_models import User
+from src.dependencies import get_game_mapper
+from src.utils.bootstrapping import load_cards_to_dabase
 
 
 def drop_table_content(db: Session, table_model: Any):
@@ -86,3 +86,13 @@ def get_clean_game_mapper():
     mapper = next(get_game_mapper())
     yield mapper
     mapper.mapping.clear()
+
+
+@pytest.fixture()
+def prefill_cards_to_database(database_connection):
+    def _load():
+        db = database_connection
+        load_cards_to_dabase(db, "resources/hungarian_cards.json")
+        return
+
+    yield _load
