@@ -65,15 +65,19 @@ def test_client():
 
 @pytest.fixture()
 def valid_user_token(test_client):
-
-    def _register(username : str = "test_user"):
+    def _register(username: str = "test_user"):
         response = test_client.post(
             "/auth/signup",
-            json={"username": username, "email": f"{username}@test.com", "password": "nah"},
+            json={
+                "username": username,
+                "email": f"{username}@test.com",
+                "password": "nah",
+            },
             headers={"content-type": "application/json"},
         )
         assert response.status_code == 200
         return response.json()["access_token"]
+
     yield _register
 
 

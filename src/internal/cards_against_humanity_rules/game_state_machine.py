@@ -69,7 +69,9 @@ class GameStateMachine(BaseModel):
             self.state = GameStates.PLAYERS_SUBMITTING_CARDS
             self.save()
         else:
-            raise InvalidPlayerAction(f"Game cannot be started without enough players!. Current players: {self.player_lookup}")
+            raise InvalidPlayerAction(
+                f"Game cannot be started without enough players!. Current players: {self.player_lookup}"
+            )
 
     def player_submit_card(self, submit_event: PlayerSubmitCards):
         if self.currently_active_card is None:

@@ -1,3 +1,5 @@
+from typing import Generator, Iterator
+
 from fastapi import Header, HTTPException, Depends
 
 from src.auth.auth_handler import decodeJWT
@@ -21,11 +23,11 @@ manager = ConnectionManager()
 game_mapper = GameEventMapper()
 
 
-def get_game_mapper() -> GameEventMapper:
+def get_game_mapper() -> Iterator[GameEventMapper]:
     yield game_mapper
 
 
-def get_websocket_connection_manager():
+def get_websocket_connection_manager() -> Iterator[ConnectionManager]:
     yield manager
 
 
