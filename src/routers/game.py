@@ -42,6 +42,7 @@ class GameEndpoints:
 class LeaveResponse(BaseModel):
     pass
 
+
 @router.post(f"/{GameEndpoints.NEW}", response_model=GameStateMachine)
 def create_new_game(
     room_name: str,

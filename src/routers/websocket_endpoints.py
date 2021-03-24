@@ -59,6 +59,7 @@ router = APIRouter(
 #     return HTMLResponse(html)
 #
 
+
 @router.websocket("/ws/{room_name}/{token}")
 async def websocket_endpoint(
     websocket: WebSocket,
