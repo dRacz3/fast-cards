@@ -2,6 +2,7 @@ import pytest
 from pydantic import EmailStr
 
 from src.auth.models import UserSchema
+from src.auth.password_hash import verify_password
 from src.database.database_models import User
 from src.users.crud import get_users, get_user_by_email, create_user
 
@@ -18,9 +19,12 @@ def insert_default_user(database_connection):
 
 def test_get_user(database_connection):
     db = database_connection
+    user_password = "nyeh"
     created_user = create_user(
         db,
-        UserSchema(email=EmailStr("asd@hello.com"), username="mr.asd", password="nyeh"),
+        UserSchema(
+            email=EmailStr("asd@hello.com"), username="mr.asd", password=user_password
+        ),
     )
 
     users_in_db = get_users(db)
@@ -28,7 +32,7 @@ def test_get_user(database_connection):
     for u in users_in_db:
         assert u.email == created_user.email
         assert u.username == created_user.username
-        assert u.password == created_user.hashed_password
+        assert verify_password(user_password, u.password)
 
 
 def test_get_user_by_email(insert_default_user, database_connection):

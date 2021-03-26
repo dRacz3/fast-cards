@@ -14,7 +14,7 @@ def test_get_all_users(valid_user_token, test_client):
 def test_user_login_fails(test_client):
     response = test_client.post(
         "/auth/login",
-        json={"email": "abdulazeez@x.com", "password": "weakpassword"},
+        json={"username": "abdulazeez", "password": "weakpassword"},
         headers=default_header(),
     )
 
@@ -26,7 +26,7 @@ def test_user_signup_then_login_success(test_client):
     signup_response = test_client.post(
         "/auth/signup",
         json={
-            "username": "mr. Test user",
+            "username": "mrTestuser",
             "email": "test@user.com",
             "password": "testpassword12512611",
         },
@@ -36,7 +36,7 @@ def test_user_signup_then_login_success(test_client):
 
     login_response = test_client.post(
         "/auth/login",
-        json={"email": "test@user.com", "password": "testpassword12512611"},
+        json={"username": "mrTestuser", "password": "testpassword12512611"},
         headers=default_header(),
     )
 

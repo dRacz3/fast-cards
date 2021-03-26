@@ -7,7 +7,7 @@ from src.database.database import SessionLocal
 from src.internal.cards_against_humanity_rules.game_event_processor import (
     GameEventMapper,
 )
-from src.users.crud import get_user_by_email
+from src.users.crud import get_user_by_username
 from src.websocket.connection_manager import ConnectionManager
 
 
@@ -35,7 +35,7 @@ async def get_token_header(x_token: str = Header(...), db=Depends(get_db)):
     token = decodeJWT(x_token)
     if token is None:
         raise HTTPException(status_code=400, detail="X-Token header invalid")
-    user = get_user_by_email(db, token.user_id)
+    user = get_user_by_username(db, token.user_id)
     if user is None:
         raise HTTPException(
             status_code=404, detail="No user is associated with the token"

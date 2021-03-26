@@ -158,3 +158,20 @@ def refresh(
     if room is None:
         raise HTTPException(404, "Room does not exist.")
     return GameStatePlayerView.from_game_state(room.session, user.user_id)
+
+
+class Room(BaseModel):
+    room_name: str
+    player_count: int
+
+
+class RoomListing(BaseModel):
+    rooms: List[Room]
+
+
+@router.get(f"/rooms", response_model=RoomListing)
+def list_rooms(game_mapper: GameEventMapper = Depends(get_game_mapper)):
+    room = [g.session for g in game_mapper.mapping.values()]
+    return RoomListing(
+        rooms=[Room(room_name=r.room_name, player_count=len(r.players)) for r in room]
+    )

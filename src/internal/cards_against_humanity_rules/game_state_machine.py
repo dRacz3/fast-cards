@@ -143,8 +143,10 @@ class GameStateMachine(BaseModel):
                     raise LogicalError(
                         "Selected submission belongs to a player that is not in the game anymore."
                     )
-
-                player.reward_points(1)
+                try:
+                    player.reward_points(1)
+                except GameHasEnded as e:
+                    self.__finish_game(e)
                 self.__start_new_round()
                 return
 
@@ -161,7 +163,7 @@ class GameStateMachine(BaseModel):
 
     def __next_active_black_card(self):
         if len(self.black_cards) == 0:
-            raise GameHasEnded("Game has ended, no more black cards left.")
+            self.__finish_game("Game has ended, no more black cards left.")
         self.currently_active_card = self.black_cards.pop()
 
     def __close_round(self):
@@ -179,7 +181,7 @@ class GameStateMachine(BaseModel):
             if card_count < CARDS_IN_PLAYER_HAND:
                 required_card_count = CARDS_IN_PLAYER_HAND - card_count
                 if required_card_count > len(self.white_cards):
-                    raise GameHasEnded("No more white cards left")
+                    self.__finish_game("No more white cards left")
                 white_cards_for_player = self.white_cards[0:required_card_count]
                 print(f"Adding cards to {p.username}=> {white_cards_for_player}")
                 p.cards_in_hand += white_cards_for_player
@@ -202,6 +204,10 @@ class GameStateMachine(BaseModel):
     def __revert_everyone_to_normal_player(self):
         for p in self.players:
             p.revert_to_normal_player()
+
+    def __finish_game(self, reason):
+        self.state = GameStates.FINISHED
+        raise GameHasEnded(reason)
 
     @classmethod
     def new_session(cls, room_name: str, round_count: int, db: Session, **kwargs):

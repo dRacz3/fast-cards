@@ -9,22 +9,20 @@ class UserSchema(BaseModel):
     class Config:
         schema_extra = {
             "example": {
-                "username": "Abdulazeez Abdulazeez Adeshina",
-                "email": "abdulazeez@x.com",
-                "password": "weakpassword",
+                "username": "Joe",
+                "email": "Joe@x.com",
+                "password": "the_password",
             }
         }
         orm_mode = True
 
 
 class UserLoginSchema(BaseModel):
-    email: EmailStr = Field(...)
+    username: str = Field(...)
     password: str = Field(...)
 
     class Config:
-        schema_extra = {
-            "example": {"email": "abdulazeez@x.com", "password": "weakpassword"}
-        }
+        schema_extra = {"example": {"username": "Joe", "password": "the_password"}}
         orm_mode = True
 
 

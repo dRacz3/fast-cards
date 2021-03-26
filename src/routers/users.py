@@ -13,6 +13,7 @@ from src.auth.models import (
     TokenResponse,
     LoginFailureMessage,
 )
+from src.auth.password_hash import verify_password
 
 from src.dependencies import get_db, get_token_header
 
@@ -26,7 +27,9 @@ router = APIRouter(
 def check_user(data: UserLoginSchema, db: Session):
     users = src.users.crud.get_users(db)
     for user in users:
-        if user.email == data.email and user.password == data.password:
+        if user.username == data.username and verify_password(
+            data.password, user.password
+        ):
             return True
     return False
 
@@ -34,8 +37,7 @@ def check_user(data: UserLoginSchema, db: Session):
 @router.post("/signup", tags=["user"], response_model=TokenResponse)
 async def create_user(user: UserSchema = Body(...), db: Session = Depends(get_db)):
     src.users.crud.create_user(db=db, user=user)
-    # replace with db call, making sure to hash the password first
-    return signJWT(user.email)
+    return signJWT(user.username)
 
 
 @router.post(
@@ -46,7 +48,7 @@ async def create_user(user: UserSchema = Body(...), db: Session = Depends(get_db
 )
 async def user_login(user: UserLoginSchema = Body(...), db: Session = Depends(get_db)):
     if check_user(user, db):
-        return signJWT(user.email)
+        return signJWT(user.username)
     return JSONResponse(status_code=403, content=dict(detail="Wrong login details!"))
 
 

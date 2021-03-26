@@ -669,6 +669,32 @@
                     }
                 ]
             }
+        },
+        "/game/rooms": {
+            "get": {
+                "tags": [
+                    "cards-against"
+                ],
+                "summary": "List Rooms",
+                "operationId": "list_rooms_game_rooms_get",
+                "responses": {
+                    "200": {
+                        "description": "Successful Response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/RoomListing"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "JWTBearer": []
+                    }
+                ]
+            }
         }
     },
     "components": {
@@ -909,6 +935,40 @@
                     }
                 }
             },
+            "Room": {
+                "title": "Room",
+                "required": [
+                    "room_name",
+                    "player_count"
+                ],
+                "type": "object",
+                "properties": {
+                    "room_name": {
+                        "title": "Room Name",
+                        "type": "string"
+                    },
+                    "player_count": {
+                        "title": "Player Count",
+                        "type": "integer"
+                    }
+                }
+            },
+            "RoomListing": {
+                "title": "RoomListing",
+                "required": [
+                    "rooms"
+                ],
+                "type": "object",
+                "properties": {
+                    "rooms": {
+                        "title": "Rooms",
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/Room"
+                        }
+                    }
+                }
+            },
             "SelectWinningSubmission": {
                 "title": "SelectWinningSubmission",
                 "required": [
@@ -980,15 +1040,14 @@
             "UserLoginSchema": {
                 "title": "UserLoginSchema",
                 "required": [
-                    "email",
+                    "username",
                     "password"
                 ],
                 "type": "object",
                 "properties": {
-                    "email": {
-                        "title": "Email",
-                        "type": "string",
-                        "format": "email"
+                    "username": {
+                        "title": "Username",
+                        "type": "string"
                     },
                     "password": {
                         "title": "Password",
@@ -996,8 +1055,8 @@
                     }
                 },
                 "example": {
-                    "email": "abdulazeez@x.com",
-                    "password": "weakpassword"
+                    "username": "Joe",
+                    "password": "the_password"
                 }
             },
             "UserSchema": {
@@ -1024,9 +1083,9 @@
                     }
                 },
                 "example": {
-                    "username": "Abdulazeez Abdulazeez Adeshina",
-                    "email": "abdulazeez@x.com",
-                    "password": "weakpassword"
+                    "username": "Joe",
+                    "email": "Joe@x.com",
+                    "password": "the_password"
                 }
             },
             "ValidationError": {
