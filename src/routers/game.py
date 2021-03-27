@@ -6,7 +6,7 @@ from sqlalchemy.orm import Session
 
 from src.auth.auth_handler import decodeJWT
 from src.cards.models import WhiteCard
-from src.dependencies import get_game_mapper
+from src.dependencies import get_game_mapper, get_websocket_connection_manager
 
 from src.auth.auth_bearer import JWTBearer
 from src.dependencies import get_db
@@ -21,12 +21,26 @@ from src.internal.cards_against_humanity_rules.models import (
     PlayerSubmitCards,
     SelectWinningSubmission,
 )
+from src.websocket.connection_manager import ConnectionManager, SENDER_TYPES
+from src.websocket.models import WebSocketMessage
 
 router = APIRouter(
     prefix="/game",
     dependencies=[Depends(get_db), Depends(JWTBearer())],
     tags=["cards-against"],
 )
+
+
+async def broadcast_event(
+    room_name: str, connection_manager: ConnectionManager, message: str
+):
+    print(f"Broadcast attemt for : {room_name}->{message}")
+    if connection_manager.active_rooms.get(room_name) is not None:
+        await connection_manager.broadcast(
+            room_name=room_name,
+            message=WebSocketMessage(message=message, sender=SENDER_TYPES.SYSTEM, topic=room_name),
+        )
+        print(f"BROADCASTED {room_name}->{message}")
 
 
 class GameEndpoints:
@@ -55,10 +69,11 @@ def create_new_game(
 
 
 @router.post(f"/{GameEndpoints.JOIN}", response_model=GameStatePlayerView)
-def join_game(
+async def join_game(
     room_name: str,
     game_mapper: GameEventMapper = Depends(get_game_mapper),
     token: str = Depends(JWTBearer()),
+    conman: ConnectionManager = Depends(get_websocket_connection_manager),
 ):
     user = decodeJWT(token)
     if user is None:
@@ -69,14 +84,17 @@ def join_game(
 
     room.session.player_join(user.user_id)
 
+    await broadcast_event(room_name, conman, f"{user.user_id} has joined the game!")
+
     return GameStatePlayerView.from_game_state(room.session, user.user_id)
 
 
 @router.post(f"/{GameEndpoints.LEAVE}", response_model=LeaveResponse)
-def leave_game(
+async def leave_game(
     room_name: str,
     game_mapper: GameEventMapper = Depends(get_game_mapper),
     token: str = Depends(JWTBearer()),
+    conman: ConnectionManager = Depends(get_websocket_connection_manager),
 ):
     user = decodeJWT(token)
     if user is None:
@@ -86,15 +104,21 @@ def leave_game(
         raise HTTPException(404, "Room does not exist.")
 
     room.session.player_leaves(user.user_id)
+    if len(room.session.players) == 0:
+        game_mapper.end_game(room_name)
+
+    await broadcast_event(room_name, conman, f"{user.user_id} has left the game!")
+
     return LeaveResponse()
 
 
 @router.post(f"/{GameEndpoints.SUBMIT}", response_model=GameStatePlayerView)
-def submit_cards(
+async def submit_cards(
     room_name: str,
     cards: List[WhiteCard],
     game_mapper: GameEventMapper = Depends(get_game_mapper),
     token: str = Depends(JWTBearer()),
+    conman: ConnectionManager = Depends(get_websocket_connection_manager),
 ):
     user = decodeJWT(token)
     if user is None:
@@ -107,15 +131,19 @@ def submit_cards(
         PlayerSubmitCards(submitting_user=user.user_id, cards=cards),
         user.user_id,
     )
+
+    await broadcast_event(room_name, conman, f"{user.user_id} has submitted cards!")
+
     return GameStatePlayerView.from_game_state(room.session, user.user_id)
 
 
 @router.post(f"/{GameEndpoints.SELECTWINNER}", response_model=GameStatePlayerView)
-def select_winner(
+async def select_winner(
     room_name: str,
     winner: SelectWinningSubmission,
     game_mapper: GameEventMapper = Depends(get_game_mapper),
     token: str = Depends(JWTBearer()),
+    conman: ConnectionManager = Depends(get_websocket_connection_manager),
 ):
     user = decodeJWT(token)
     if user is None:
@@ -125,14 +153,19 @@ def select_winner(
         raise HTTPException(404, "Room does not exist.")
 
     room.on_new_event(winner, user.user_id)
+    await broadcast_event(
+        room_name, conman, f"{user.user_id} selected the winner, it is : TODO"
+    )
+
     return GameStatePlayerView.from_game_state(room.session, user.user_id)
 
 
 @router.post(f"/{GameEndpoints.START_GAME}", response_model=GameStatePlayerView)
-def start_game(
+async def start_game(
     room_name: str,
     game_mapper: GameEventMapper = Depends(get_game_mapper),
     token: str = Depends(JWTBearer()),
+    conman: ConnectionManager = Depends(get_websocket_connection_manager),
 ):
     user = decodeJWT(token)
     if user is None:
@@ -142,6 +175,13 @@ def start_game(
         raise HTTPException(404, "Room does not exist.")
 
     room.session.start_game()
+
+    await broadcast_event(
+        room_name,
+        conman,
+        f"{user.user_id} has pressed start on the game! Buckle up, and enjoy",
+    )
+
     return GameStatePlayerView.from_game_state(room.session, user.user_id)
 
 

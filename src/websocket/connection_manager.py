@@ -12,6 +12,7 @@ from src.websocket.models import Room, WebSocketMessage
 class SENDER_TYPES:
     BROADCAST = "BROADCAST"
     PERSONAL = "DIRECT"
+    SYSTEM = "SYSTEM"
 
 
 async def get_cookie_or_token(
