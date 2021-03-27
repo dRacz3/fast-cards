@@ -38,7 +38,9 @@ async def broadcast_event(
     if connection_manager.active_rooms.get(room_name) is not None:
         await connection_manager.broadcast(
             room_name=room_name,
-            message=WebSocketMessage(message=message, sender=SENDER_TYPES.SYSTEM, topic=room_name),
+            message=WebSocketMessage(
+                message=message, sender=SENDER_TYPES.SYSTEM, topic=room_name
+            ),
         )
         print(f"BROADCASTED {room_name}->{message}")
 

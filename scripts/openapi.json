@@ -802,6 +802,9 @@
                         "type": "string",
                         "default": "STARTING"
                     },
+                    "last_winner": {
+                        "$ref": "#/components/schemas/LastWinnerInfo"
+                    },
                     "round_count": {
                         "title": "Round Count",
                         "type": "integer",
@@ -868,6 +871,9 @@
                         "items": {
                             "$ref": "#/components/schemas/PlayerOutsideView"
                         }
+                    },
+                    "last_winner": {
+                        "$ref": "#/components/schemas/LastWinnerInfo"
                     }
                 }
             },
@@ -881,6 +887,23 @@
                         "items": {
                             "$ref": "#/components/schemas/ValidationError"
                         }
+                    }
+                }
+            },
+            "LastWinnerInfo": {
+                "title": "LastWinnerInfo",
+                "required": [
+                    "username",
+                    "submission"
+                ],
+                "type": "object",
+                "properties": {
+                    "username": {
+                        "title": "Username",
+                        "type": "string"
+                    },
+                    "submission": {
+                        "$ref": "#/components/schemas/Submission"
                     }
                 }
             },

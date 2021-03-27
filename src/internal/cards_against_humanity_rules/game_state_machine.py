@@ -22,6 +22,7 @@ from src.internal.cards_against_humanity_rules.models import (
     PlayerSubmitCards,
     SelectWinningSubmission,
     PlayerOutsideView,
+    LastWinnerInfo,
 )
 
 
@@ -32,6 +33,7 @@ class GameStateMachine(BaseModel):
     white_cards: List[WhiteCard]
 
     state: str = GameStates.STARTING
+    last_winner: Optional[LastWinnerInfo]
     round_count: int = 0
 
     currently_active_card: Optional[BlackCard] = None
@@ -145,6 +147,9 @@ class GameStateMachine(BaseModel):
                     )
                 try:
                     player.reward_points(1)
+                    self.last_winner = LastWinnerInfo(
+                        username=player.username, submission=winner.submission
+                    )
                 except GameHasEnded as e:
                     self.__finish_game(e)
                 self.__start_new_round()
@@ -238,6 +243,7 @@ class GameStatePlayerView(BaseModel):
     currently_active_card: Optional[BlackCard] = None
     player_submissions: Dict[str, Submission] = Field(default_factory=dict)
     other_players: List[PlayerOutsideView]
+    last_winner: Optional[LastWinnerInfo]
 
     @classmethod
     def from_game_state(cls, s: GameStateMachine, username: str):
@@ -250,6 +256,7 @@ class GameStatePlayerView(BaseModel):
             player_submissions=s.player_submissions,
             other_players=[PlayerOutsideView.from_player(p) for p in s.players],
             player=s.player_lookup[username],
+            last_winner=s.last_winner,
         )
 
     def __hash__(self):

@@ -83,6 +83,11 @@ class CardsAgainstHumanityPlayer(BaseModel):
             )
 
 
+class LastWinnerInfo(BaseModel):
+    username: str
+    submission: Submission
+
+
 class PlayerOutsideView(BaseModel):
     username: str
     points: int = 0
