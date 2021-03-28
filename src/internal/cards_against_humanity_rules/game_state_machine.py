@@ -176,6 +176,8 @@ class GameStateMachine(BaseModel):
         self.state = GameStates.TZAR_CHOOSING_WINNER
 
     def __start_new_round(self):
+        if self.state == GameStates.FINISHED:
+            return
         self.round_count += 1
         print(f"Starting a new round #{self.round_count}")
         self.state = GameStates.PLAYERS_SUBMITTING_CARDS
