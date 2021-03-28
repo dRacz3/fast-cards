@@ -106,8 +106,9 @@ def basic_game_setup_with_3_players(
 
 
 def test_game_does_not_start_without_enough_players(
-    valid_user_token, test_client, get_clean_game_mapper
+    valid_user_token, test_client, get_clean_game_mapper, prefill_cards_to_database
 ):
+    prefill_cards_to_database()
     mapper = get_clean_game_mapper
     room_name = "test_room"
     client1 = GameTestClient(valid_user_token("user1"), test_client, room_name)
@@ -122,7 +123,8 @@ def test_game_does_not_start_without_enough_players(
         assert start_response.status_code == status.HTTP_500_INTERNAL_SERVER_ERROR
 
 
-def test_game_creation(valid_user_token, test_client, get_clean_game_mapper):
+def test_game_creation(valid_user_token, test_client, get_clean_game_mapper, prefill_cards_to_database):
+    prefill_cards_to_database()
     mapper = get_clean_game_mapper
     room_name = "test_room"
     client1 = GameTestClient(valid_user_token("user1"), test_client, room_name)
@@ -139,7 +141,8 @@ def test_game_creation(valid_user_token, test_client, get_clean_game_mapper):
     assert start_response.status_code == status.HTTP_200_OK, start_response.content
 
 
-def test_game_creation_fails_with_duplicate_name(valid_user_token, test_client):
+def test_game_creation_fails_with_duplicate_name(valid_user_token, test_client, prefill_cards_to_database):
+    prefill_cards_to_database()
     client1 = GameTestClient(valid_user_token("user1"), test_client, "test1")
     assert client1.new_game().status_code == status.HTTP_200_OK
     assert client1.new_game().status_code == status.HTTP_403_FORBIDDEN
