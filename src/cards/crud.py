@@ -1,3 +1,4 @@
+import random
 from typing import List
 
 from sqlalchemy.orm import Session
@@ -43,22 +44,22 @@ def add_multiple_new_black_card(
 
 
 def get_n_random_white_cards(db: Session, count: int) -> List[WhiteCard]:
-    # TODO: optimize randmozation..
     returned_cards: List[database_models.WhiteCard] = db.query(
         database_models.WhiteCard
     ).all()
+    selected = random.sample(returned_cards, count)
     return [
         WhiteCard(deck=c.deck, card_id=c.card_id, text=c.text, icon=c.icon)
-        for c in returned_cards
-    ][0:count]
+        for c in selected
+    ]
 
 
 def get_n_random_black_cards(db: Session, count: int) -> List[BlackCard]:
-    # TODO: optimize randmozation..
     returned_cards: List[database_models.BlackCard] = db.query(
         database_models.BlackCard
     ).all()
+    selected = random.sample(returned_cards, count)
     return [
         BlackCard(deck=c.deck, card_id=c.card_id, text=c.text, icon=c.icon, pick=c.pick)
-        for c in returned_cards
-    ][0:count]
+        for c in selected
+    ]
