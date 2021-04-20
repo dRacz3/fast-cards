@@ -75,8 +75,13 @@ class GameStateMachine(BaseModel):
         for p in self.players:
             if p.username == username:
                 player_to_remove = p
+
+        if self.tzar == player_to_remove :
+            print("The tzar is removed.. Starting a new round")
+            self.__start_new_round()
         if player_to_remove is not None:
             self.player_lookup.pop(player_to_remove.username)
+
 
     def start_game(self):
         if len(self.players) >= 2:
