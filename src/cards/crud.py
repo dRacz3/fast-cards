@@ -4,7 +4,7 @@ from typing import List
 from sqlalchemy.orm import Session
 
 from src.database import database_models
-from src.cards.models import WhiteCard, BlackCard
+from src.cards.models import WhiteCard, BlackCard, DeckMetaData
 
 
 def add_new_white_card(db: Session, card: WhiteCard) -> database_models.WhiteCard:
@@ -31,6 +31,14 @@ def add_new_black_card(db: Session, card: BlackCard) -> database_models.BlackCar
     db.commit()
     db.refresh(db_card)
     return db_card
+
+
+def add_new_deck(db: Session, deck: DeckMetaData) -> database_models.BlackCard:
+    db_deck = database_models.DeckMetaData(**deck.dict())
+    db.add(db_deck)
+    db.commit()
+    db.refresh(db_deck)
+    return db_deck
 
 
 def add_multiple_new_black_card(

@@ -1,7 +1,7 @@
 import json
 
-from src.cards.crud import add_multiple_new_white_card, add_multiple_new_black_card
-from src.cards.models import WhiteCard, BlackCard
+from src.cards.crud import add_multiple_new_white_card, add_multiple_new_black_card, add_new_deck
+from src.cards.models import WhiteCard, BlackCard, DeckMetaData
 from src.database.database import SessionLocal
 
 
@@ -13,6 +13,15 @@ if __name__ == "__main__":
     for pack in data:
         deck_name = pack['name']
         print(f"Processing {deck_name}")
+
+
+
+        add_new_deck(database,DeckMetaData(id_name = deck_name,
+                     description = deck_name,
+                     official = pack['official'],
+                     name = deck_name,
+                     icon = deck_name) )
+
         white_cards = []
         black_cards = []
         for w in pack['white']:
