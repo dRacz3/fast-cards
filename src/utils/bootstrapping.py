@@ -6,7 +6,7 @@ from src.cards.crud import add_multiple_new_white_card, add_multiple_new_black_c
 from src.cards.models import WhiteCard, BlackCard
 
 
-def load_cards_to_dabase(db: Session, input_file_path: str):
+def load_hungarian_cards_to_dabase(db: Session, input_file_path: str):
     with open(input_file_path) as f:
         data = json.load(f)
 

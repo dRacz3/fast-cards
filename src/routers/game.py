@@ -13,7 +13,9 @@ from src.dependencies import get_db
 from src.internal.cards_against_humanity_rules.game_event_processor import (
     GameEventMapper,
 )
-from src.internal.cards_against_humanity_rules.game_related_exceptions import GameHasEnded
+from src.internal.cards_against_humanity_rules.game_related_exceptions import (
+    GameHasEnded,
+)
 from src.internal.cards_against_humanity_rules.game_state_machine import (
     GameStateMachine,
     GameStatePlayerView,
@@ -158,9 +160,11 @@ async def select_winner(
     try:
         room.on_new_event(winner, user.user_id)
     except GameHasEnded as e:
-        pass # It's fine. Just proceed.
+        pass  # It's fine. Just proceed.
     await broadcast_event(
-        room_name, conman, f"{user.user_id} selected the winner, it is : {room.session.last_winner.username}"
+        room_name,
+        conman,
+        f"{user.user_id} selected the winner, it is : {room.session.last_winner.username}",
     )
 
     return GameStatePlayerView.from_game_state(room.session, user.user_id)
@@ -203,6 +207,9 @@ def refresh(
     room = game_mapper.get_game(room_name)
     if room is None:
         raise HTTPException(404, "Room does not exist.")
+    if user.user_id not in room.session.player_lookup.keys():
+        raise HTTPException(404, "User not in the game room.")
+
     return GameStatePlayerView.from_game_state(room.session, user.user_id)
 
 
