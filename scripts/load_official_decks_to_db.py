@@ -14,8 +14,6 @@ if __name__ == "__main__":
         deck_name = pack['name']
         print(f"Processing {deck_name}")
 
-
-
         add_new_deck(database,DeckMetaData(id_name = deck_name,
                      description = deck_name,
                      official = pack['official'],
