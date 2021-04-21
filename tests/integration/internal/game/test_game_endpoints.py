@@ -38,7 +38,9 @@ class GameTestClient:
 
     def new_game(self):
         return self.test_client.post(
-            f"/game/{GameEndpoints.NEW}?room_name={self.room_name}", headers=self.header
+            f"/game/{GameEndpoints.NEW}?room_name={self.room_name}",
+            headers=self.header,
+            json={},
         )
 
     def player_join(self):

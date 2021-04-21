@@ -1,4 +1,4 @@
-from typing import List
+from typing import List, Optional
 
 from fastapi import APIRouter, HTTPException, Depends
 from pydantic import BaseModel
@@ -23,6 +23,7 @@ from src.internal.cards_against_humanity_rules.game_state_machine import (
 from src.internal.cards_against_humanity_rules.models import (
     PlayerSubmitCards,
     SelectWinningSubmission,
+    GamePreferences,
 )
 from src.websocket.connection_manager import ConnectionManager, SENDER_TYPES
 from src.websocket.models import WebSocketMessage
@@ -65,12 +66,15 @@ class LeaveResponse(BaseModel):
 @router.post(f"/{GameEndpoints.NEW}", response_model=GameStateMachine)
 def create_new_game(
     room_name: str,
+    preferences: Optional[GamePreferences],
     game_mapper: GameEventMapper = Depends(get_game_mapper),
     db: Session = Depends(get_db),
 ):
     if game_mapper.get_game(room_name) is not None:
         raise HTTPException(403, "Room already exist.")
-    return game_mapper.new_game(room_name, db).session.dict()
+    if preferences is None:
+        preferences = GamePreferences.default()
+    return game_mapper.new_game(room_name, db, preferences).session.dict()
 
 
 @router.post(f"/{GameEndpoints.JOIN}", response_model=GameStatePlayerView)

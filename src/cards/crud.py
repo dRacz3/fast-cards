@@ -1,5 +1,5 @@
 import random
-from typing import List
+from typing import List, Optional
 
 from sqlalchemy.orm import Session
 
@@ -51,10 +51,22 @@ def add_multiple_new_black_card(
     return db_cards
 
 
-def get_n_random_white_cards(db: Session, count: int) -> List[WhiteCard]:
-    returned_cards: List[database_models.WhiteCard] = db.query(
-        database_models.WhiteCard
-    ).all()
+def get_n_random_white_cards(
+    db: Session, count: int, allowed_decks: Optional[List[DeckMetaData]] = None
+) -> List[WhiteCard]:
+    returned_cards: List[database_models.WhiteCard]
+    if allowed_decks is None:
+        returned_cards = db.query(database_models.WhiteCard).all()
+    else:
+        returned_cards = (
+            db.query(database_models.WhiteCard)
+            .filter(
+                database_models.WhiteCard.deck.in_(
+                    [d.id_name for d in allowed_decks]
+                )
+            )
+            .all()
+        )
     selected = random.sample(returned_cards, count)
     return [
         WhiteCard(deck=c.deck, card_id=c.card_id, text=c.text, icon=c.icon)
@@ -62,10 +74,23 @@ def get_n_random_white_cards(db: Session, count: int) -> List[WhiteCard]:
     ]
 
 
-def get_n_random_black_cards(db: Session, count: int) -> List[BlackCard]:
-    returned_cards: List[database_models.BlackCard] = db.query(
-        database_models.BlackCard
-    ).all()
+def get_n_random_black_cards(
+    db: Session, count: int, allowed_decks: Optional[List[DeckMetaData]] = None
+) -> List[BlackCard]:
+    returned_cards: List[database_models.BlackCard]
+    if allowed_decks is None:
+        returned_cards = db.query(database_models.BlackCard).all()
+    else:
+        returned_cards = (
+            db.query(database_models.BlackCard)
+            .filter(
+                database_models.BlackCard.deck.in_(
+                    [d.id_name for d in allowed_decks]
+                )
+            )
+            .all()
+        )
+
     selected = random.sample(returned_cards, count)
     return [
         BlackCard(deck=c.deck, card_id=c.card_id, text=c.text, icon=c.icon, pick=c.pick)

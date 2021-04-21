@@ -7,7 +7,7 @@ from pydantic import BaseModel, Field
 from sqlalchemy.orm import Session
 
 from src.cards.crud import get_n_random_white_cards, get_n_random_black_cards
-from src.cards.models import BlackCard, WhiteCard
+from src.cards.models import BlackCard, WhiteCard, DeckMetaData
 from src.internal.cards_against_humanity_rules.game_related_exceptions import (
     InvalidPlayerAction,
     LogicalError,
@@ -23,6 +23,7 @@ from src.internal.cards_against_humanity_rules.models import (
     SelectWinningSubmission,
     PlayerOutsideView,
     LastWinnerInfo,
+    GamePreferences,
 )
 
 
@@ -76,12 +77,11 @@ class GameStateMachine(BaseModel):
             if p.username == username:
                 player_to_remove = p
 
-        if self.tzar == player_to_remove :
+        if self.tzar == player_to_remove:
             print("The tzar is removed.. Starting a new round")
             self.__start_new_round()
         if player_to_remove is not None:
             self.player_lookup.pop(player_to_remove.username)
-
 
     def start_game(self):
         if len(self.players) >= 2:
@@ -222,11 +222,21 @@ class GameStateMachine(BaseModel):
         raise GameHasEnded(reason)
 
     @classmethod
-    def new_session(cls, room_name: str, round_count: int, db: Session, **kwargs):
+    def new_session(
+        cls,
+        room_name: str,
+        round_count: int,
+        db: Session,
+        preferences: GamePreferences,
+    ):
         return cls(
             room_name=room_name,
-            white_cards=get_n_random_white_cards(db, round_count * 15),
-            black_cards=get_n_random_black_cards(db, round_count),
+            white_cards=get_n_random_white_cards(
+                db, round_count * 15, allowed_decks=preferences.deck_preferences
+            ),
+            black_cards=get_n_random_black_cards(
+                db, round_count, allowed_decks=preferences.deck_preferences
+            ),
         )
 
     def save(self):

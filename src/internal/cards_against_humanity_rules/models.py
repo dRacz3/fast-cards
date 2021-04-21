@@ -1,8 +1,8 @@
-from typing import List, Optional, Dict
+from typing import List, Optional
 
 from pydantic import BaseModel, Field
 
-from src.cards.models import BlackCard, WhiteCard
+from src.cards.models import BlackCard, WhiteCard, DeckMetaData
 from src.internal.cards_against_humanity_rules.game_related_exceptions import (
     GameHasEnded,
 )
@@ -97,3 +97,27 @@ class PlayerOutsideView(BaseModel):
     @classmethod
     def from_player(cls, player: CardsAgainstHumanityPlayer):
         return cls(**player.copy(exclude={"cards_in_hand"}).dict())
+
+
+class GamePreferences(BaseModel):
+    deck_preferences: Optional[List[DeckMetaData]] = None
+    points_needed_for_win: int = 10
+    max_round_count: int = 15
+
+    @classmethod
+    def default(cls):
+        return cls()
+
+    @classmethod
+    def hungarian(cls):
+        return cls(
+            deck_preferences=[
+                DeckMetaData(
+                    id_name="hungarian",
+                    description="Hungarian card collection",
+                    official=False,
+                    name="hungarian",
+                    icon="hungarian",
+                )
+            ],
+        )

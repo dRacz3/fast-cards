@@ -28,6 +28,7 @@ def create_black_card(card: src.cards.models.BlackCard, db: Session = Depends(ge
     _ = src.cards.crud.add_new_black_card(db, card)
     return card
 
+
 # TODO : add test for it
 @router.get("/deck", response_model=List[src.cards.models.DeckMetaData])
 def get_deck_list(db: Session = Depends(get_db)):
