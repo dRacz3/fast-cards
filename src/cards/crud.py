@@ -71,3 +71,19 @@ def get_n_random_black_cards(db: Session, count: int) -> List[BlackCard]:
         BlackCard(deck=c.deck, card_id=c.card_id, text=c.text, icon=c.icon, pick=c.pick)
         for c in selected
     ]
+
+
+def get_deck_list(db: Session) -> List[DeckMetaData]:
+    decks_in_db: List[database_models.DeckMetaData] = db.query(
+        database_models.DeckMetaData
+    ).all()
+    return [
+        DeckMetaData(
+            id_name=d.id_name,
+            description=d.description,
+            official=d.official,
+            name=d.name,
+            icon=d.icon,
+        )
+        for d in decks_in_db
+    ]

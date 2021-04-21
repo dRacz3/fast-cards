@@ -1,3 +1,5 @@
+from typing import List
+
 from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 
@@ -25,3 +27,8 @@ def create_white_card(card: src.cards.models.WhiteCard, db: Session = Depends(ge
 def create_black_card(card: src.cards.models.BlackCard, db: Session = Depends(get_db)):
     _ = src.cards.crud.add_new_black_card(db, card)
     return card
+
+# TODO : add test for it
+@router.get("/deck", response_model=List[src.cards.models.DeckMetaData])
+def get_deck_list(db: Session = Depends(get_db)):
+    return src.cards.crud.get_deck_list(db)
