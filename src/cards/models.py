@@ -15,7 +15,7 @@ class DeckMetaData(BaseModel):
 
 
 class BlackCard(BaseModel):
-    card_id: Optional[int] = -1
+    card_id: Optional[int] = None
     text: str
     icon: str
     deck: str
@@ -26,7 +26,7 @@ class BlackCard(BaseModel):
 
 
 class WhiteCard(BaseModel):
-    card_id: Optional[int] = -1
+    card_id: Optional[int] = None
     text: str
     icon: str
     deck: str

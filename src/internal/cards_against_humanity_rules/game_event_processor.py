@@ -1,8 +1,9 @@
 from dataclasses import dataclass
-from typing import Dict, Callable, Optional, Any
+from typing import Dict, Callable, Optional, Any, List
 
 from sqlalchemy.orm import Session
 
+from src.cards.models import DeckMetaData
 from src.internal.cards_against_humanity_rules.game_related_exceptions import (
     LogicalError,
 )
@@ -14,6 +15,7 @@ from src.internal.cards_against_humanity_rules.models import (
     PlayerSubmitCards,
     SelectWinningSubmission,
     CardsAgainstHumanityRoles,
+    GamePreferences,
 )
 
 
@@ -24,8 +26,15 @@ class Reaction:
 
 
 class GameEventProcessor:
-    def __init__(self, room_name, db: Session, **kwargs):
-        self.session = GameStateMachine.new_session(room_name, round_count=10, db=db)
+    def __init__(
+        self,
+        room_name,
+        db: Session,
+        preferences: GamePreferences,
+    ):
+        self.session = GameStateMachine.new_session(
+            room_name, round_count=10, db=db, preferences=preferences
+        )
         self.event_mapping: Dict[Any, Reaction] = {
             PlayerSubmitCards.event_id(): Reaction(
                 event_callback=self.session.player_submit_card
@@ -66,8 +75,10 @@ class GameEventMapper:
     def get_game(self, room_name) -> Optional[GameEventProcessor]:
         return self.mapping.get(room_name)
 
-    def new_game(self, room_name: str, db: Session) -> GameEventProcessor:
-        self.mapping[room_name] = GameEventProcessor(room_name, db)
+    def new_game(
+        self, room_name: str, db: Session, preferences: GamePreferences
+    ) -> GameEventProcessor:
+        self.mapping[room_name] = GameEventProcessor(room_name, db, preferences)
         created_room = self.get_game(room_name)
         if created_room is None:
             raise LogicalError(

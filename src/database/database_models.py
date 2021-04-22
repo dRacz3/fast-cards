@@ -32,9 +32,12 @@ class BlackCard(Base):
     pick = Column(Integer)
 
 
-class Room(Base):
-    __tablename__ = "rooms"
+class DeckMetaData(Base):
+    __tablename__ = "decks"
 
-    room_id = Column(Integer, primary_key=True, autoincrement=True)
-    room_name = Column(String, unique=True)
-    host_user = Column(String)
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    id_name = Column(String, unique=True)
+    description = Column(String, unique=True)
+    name = Column(String, unique=True)
+    icon = Column(String)
+    official = Column(Boolean)
