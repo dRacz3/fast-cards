@@ -299,6 +299,36 @@
                 ]
             }
         },
+        "/cards/deck": {
+            "get": {
+                "tags": [
+                    "cards"
+                ],
+                "summary": "Get Deck List",
+                "operationId": "get_deck_list_cards_deck_get",
+                "responses": {
+                    "200": {
+                        "description": "Successful Response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "title": "Response Get Deck List Cards Deck Get",
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/components/schemas/DeckMetaData"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "JWTBearer": []
+                    }
+                ]
+            }
+        },
         "/game/new": {
             "post": {
                 "tags": [
@@ -317,6 +347,16 @@
                         "in": "query"
                     }
                 ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/GamePreferences"
+                            }
+                        }
+                    },
+                    "required": true
+                },
                 "responses": {
                     "200": {
                         "description": "Successful Response",
@@ -711,8 +751,7 @@
                 "properties": {
                     "card_id": {
                         "title": "Card Id",
-                        "type": "integer",
-                        "default": -1
+                        "type": "integer"
                     },
                     "text": {
                         "title": "Text",
@@ -767,6 +806,62 @@
                         "items": {
                             "$ref": "#/components/schemas/Submission"
                         }
+                    }
+                }
+            },
+            "DeckMetaData": {
+                "title": "DeckMetaData",
+                "required": [
+                    "id_name",
+                    "description",
+                    "name",
+                    "icon"
+                ],
+                "type": "object",
+                "properties": {
+                    "id_name": {
+                        "title": "Id Name",
+                        "type": "string"
+                    },
+                    "description": {
+                        "title": "Description",
+                        "type": "string"
+                    },
+                    "official": {
+                        "title": "Official",
+                        "type": "boolean",
+                        "default": false
+                    },
+                    "name": {
+                        "title": "Name",
+                        "type": "string"
+                    },
+                    "icon": {
+                        "title": "Icon",
+                        "type": "string"
+                    }
+                }
+            },
+            "GamePreferences": {
+                "title": "GamePreferences",
+                "type": "object",
+                "properties": {
+                    "deck_preferences": {
+                        "title": "Deck Preferences",
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/DeckMetaData"
+                        }
+                    },
+                    "points_needed_for_win": {
+                        "title": "Points Needed For Win",
+                        "type": "integer",
+                        "default": 10
+                    },
+                    "max_round_count": {
+                        "title": "Max Round Count",
+                        "type": "integer",
+                        "default": 15
                     }
                 }
             },
@@ -1148,8 +1243,7 @@
                 "properties": {
                     "card_id": {
                         "title": "Card Id",
-                        "type": "integer",
-                        "default": -1
+                        "type": "integer"
                     },
                     "text": {
                         "title": "Text",

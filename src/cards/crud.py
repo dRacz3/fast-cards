@@ -61,9 +61,7 @@ def get_n_random_white_cards(
         returned_cards = (
             db.query(database_models.WhiteCard)
             .filter(
-                database_models.WhiteCard.deck.in_(
-                    [d.id_name for d in allowed_decks]
-                )
+                database_models.WhiteCard.deck.in_([d.id_name for d in allowed_decks])
             )
             .all()
         )
@@ -84,9 +82,7 @@ def get_n_random_black_cards(
         returned_cards = (
             db.query(database_models.BlackCard)
             .filter(
-                database_models.BlackCard.deck.in_(
-                    [d.id_name for d in allowed_decks]
-                )
+                database_models.BlackCard.deck.in_([d.id_name for d in allowed_decks])
             )
             .all()
         )
