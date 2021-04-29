@@ -6,12 +6,14 @@ from fastapi.responses import JSONResponse
 
 import src.users.crud
 import src.users.models
-from src.auth.auth_handler import signJWT
+from src.auth.auth_bearer import JWTBearer
+from src.auth.auth_handler import signJWT, decodeJWT
 from src.auth.models import (
     UserSchema,
     UserLoginSchema,
     TokenResponse,
     LoginFailureMessage,
+    LoginCheckResponse,
 )
 from src.auth.password_hash import verify_password
 
@@ -70,3 +72,11 @@ def read_user(user_id: int, db: Session = Depends(get_db)):
     if db_user is None:
         raise HTTPException(status_code=404, detail="User not found")
     return db_user
+
+
+@router.get("/is_my_login_valid", response_model=LoginCheckResponse)
+def is_my_login_valid(token: str = Depends(JWTBearer())):
+    user = decodeJWT(token)
+    if user is None:
+        raise HTTPException(404, "User not found with this token.")
+    return LoginCheckResponse(success=True)

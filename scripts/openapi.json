@@ -207,6 +207,32 @@
                 }
             }
         },
+        "/auth/is_my_login_valid": {
+            "get": {
+                "tags": [
+                    "auth"
+                ],
+                "summary": "Is My Login Valid",
+                "operationId": "is_my_login_valid_auth_is_my_login_valid_get",
+                "responses": {
+                    "200": {
+                        "description": "Successful Response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/LoginCheckResponse"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "JWTBearer": []
+                    }
+                ]
+            }
+        },
         "/cards/white": {
             "put": {
                 "tags": [
@@ -1006,6 +1032,19 @@
                 "title": "LeaveResponse",
                 "type": "object",
                 "properties": {}
+            },
+            "LoginCheckResponse": {
+                "title": "LoginCheckResponse",
+                "required": [
+                    "success"
+                ],
+                "type": "object",
+                "properties": {
+                    "success": {
+                        "title": "Success",
+                        "type": "boolean"
+                    }
+                }
             },
             "LoginFailureMessage": {
                 "title": "LoginFailureMessage",
