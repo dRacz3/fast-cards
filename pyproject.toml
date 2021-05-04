@@ -1,0 +1,27 @@
+[tool.poetry]
+name = "fast-cards"
+version = "0.1.0"
+description = ""
+authors = ["Daniel Racz <daniel.racz@irob.uni-obuda.hu>"]
+
+[tool.poetry.dependencies]
+python = "^3.9"
+uvicorn = "^0.13.4"
+fastapi = "^0.63.0"
+black = "^21.4b2"
+mypy = "^0.812"
+SQLAlchemy = "^1.4.13"
+sqlalchemy-stubs = "^0.4"
+PyJWT = "2.0.1"
+pydantic = "^1.8.1"
+pytest = "^6.2.4"
+pytest-cov = "^2.11.1"
+requests = "^2.25.1"
+jsonlines = "^2.0.0"
+passlib = "^1.7.4"
+
+[tool.poetry.dev-dependencies]
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"
