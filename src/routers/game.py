@@ -74,6 +74,7 @@ def create_new_game(
         raise HTTPException(403, "Room already exist.")
     if preferences is None:
         preferences = GamePreferences.default()
+    print(f"Creating new room with preferences: {preferences}")
     return game_mapper.new_game(room_name, db, preferences).session.dict()
 
 

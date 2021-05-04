@@ -42,3 +42,7 @@ class LoginFailureMessage(BaseModel):
         schema_extra = {
             "example": {"detail": "The reason why the authenticaion failed"}
         }
+
+
+class LoginCheckResponse(BaseModel):
+    success: bool
