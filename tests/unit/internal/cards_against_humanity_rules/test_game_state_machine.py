@@ -47,7 +47,7 @@ def test_game_session_creation_and_user_assignment(
     db = database_connection
     sess = GameFactory.new_session("test", db, GamePreferences.default())
     assert len(sess.players) == 0
-    assert len(sess.black_cards) == 15
+    assert len(sess.black_cards) == 45
     assert len(sess.white_cards) > 15
 
     sess.player_join("Joe")
