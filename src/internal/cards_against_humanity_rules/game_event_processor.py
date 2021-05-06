@@ -1,9 +1,9 @@
 from dataclasses import dataclass
-from typing import Dict, Callable, Optional, Any, List
+from typing import Dict, Callable, Optional, Any
 
 from sqlalchemy.orm import Session
 
-from src.cards.models import DeckMetaData
+from src.internal.cards_against_humanity_rules.game_factory import GameFactory
 from src.internal.cards_against_humanity_rules.game_related_exceptions import (
     LogicalError,
 )
@@ -32,7 +32,7 @@ class GameEventProcessor:
         db: Session,
         preferences: GamePreferences,
     ):
-        self.session = GameStateMachine.new_session(
+        self.session = GameFactory.new_session(
             room_name, round_count=10, db=db, preferences=preferences
         )
         self.event_mapping: Dict[Any, Reaction] = {

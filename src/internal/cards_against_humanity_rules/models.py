@@ -23,6 +23,11 @@ class GameStates:
     FINISHED = "FINISHED"
 
 
+class GameModes:
+    NORMAL = "NORMAL"
+    GOD_IS_DEAD = "GOD_IS_DEAD"
+
+
 class Submission(BaseModel):
     black_card: BlackCard
     white_cards: List[WhiteCard]
@@ -103,6 +108,7 @@ class GamePreferences(BaseModel):
     deck_preferences: Optional[List[DeckMetaData]] = None
     points_needed_for_win: int = 10
     max_round_count: int = 15
+    mode: str = GameModes.NORMAL
 
     @classmethod
     def default(cls):
@@ -121,3 +127,7 @@ class GamePreferences(BaseModel):
                 )
             ],
         )
+
+    @classmethod
+    def god_is_dead_mode(cls):
+        return cls(mode=GameModes.GOD_IS_DEAD)

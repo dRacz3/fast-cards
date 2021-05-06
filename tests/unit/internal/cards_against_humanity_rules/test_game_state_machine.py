@@ -2,6 +2,7 @@ from typing import List
 
 import pytest
 
+from src.internal.cards_against_humanity_rules.game_factory import GameFactory
 from src.internal.cards_against_humanity_rules.game_related_exceptions import (
     InvalidPlayerAction,
     LogicalError,
@@ -27,7 +28,7 @@ from src.internal.cards_against_humanity_rules.models import (
 def default_game_with_3_players(database_connection, prefill_cards_to_database):
     prefill_cards_to_database()
     db = database_connection
-    sess = GameStateMachine.new_session("test", 5, db, GamePreferences.default())
+    sess = GameFactory.new_session("test", 5, db, GamePreferences.default())
     ### STARTING GAME PHASE ######
     with pytest.raises(InvalidPlayerAction):
         sess.start_game()
@@ -44,9 +45,9 @@ def test_game_session_creation_and_user_assignment(
 ):
     prefill_cards_to_database()
     db = database_connection
-    sess = GameStateMachine.new_session("test", 5, db, GamePreferences.default())
+    sess = GameFactory.new_session("test", 5, db, GamePreferences.default())
     assert len(sess.players) == 0
-    assert len(sess.black_cards) == 5
+    assert len(sess.black_cards) == 15
     assert len(sess.white_cards) > 15
 
     sess.player_join("Joe")
@@ -72,7 +73,7 @@ def test_game_starts_only_with_enough_players(
 ):
     prefill_cards_to_database()
     db = database_connection
-    sess: GameStateMachine = GameStateMachine.new_session(
+    sess: GameStateMachine = GameFactory.new_session(
         "test", 5, db, GamePreferences.default()
     )
     ### STARTING GAME PHASE ######

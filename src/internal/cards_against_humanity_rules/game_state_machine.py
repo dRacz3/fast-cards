@@ -7,7 +7,7 @@ from pydantic import BaseModel, Field
 from sqlalchemy.orm import Session
 
 from src.cards.crud import get_n_random_white_cards, get_n_random_black_cards
-from src.cards.models import BlackCard, WhiteCard, DeckMetaData
+from src.cards.models import BlackCard, WhiteCard
 from src.internal.cards_against_humanity_rules.game_related_exceptions import (
     InvalidPlayerAction,
     LogicalError,
@@ -24,6 +24,7 @@ from src.internal.cards_against_humanity_rules.models import (
     PlayerOutsideView,
     LastWinnerInfo,
     GamePreferences,
+    GameModes,
 )
 
 
@@ -34,6 +35,7 @@ class GameStateMachine(BaseModel):
     white_cards: List[WhiteCard]
 
     state: str = GameStates.STARTING
+    mode: str = GameModes.NORMAL
     last_winner: Optional[LastWinnerInfo]
     round_count: int = 0
 
@@ -143,6 +145,11 @@ class GameStateMachine(BaseModel):
             )
 
     def select_winner(self, winner: SelectWinningSubmission):
+        """
+        Normally the tzar could select a winner.
+        :param winner:
+        :return:
+        """
         for username, submission in self.player_submissions.items():
             if submission == winner.submission:
                 player = self.__lookup_player_by_name(username)
@@ -220,24 +227,6 @@ class GameStateMachine(BaseModel):
     def __finish_game(self, reason):
         self.state = GameStates.FINISHED
         raise GameHasEnded(reason)
-
-    @classmethod
-    def new_session(
-        cls,
-        room_name: str,
-        round_count: int,
-        db: Session,
-        preferences: GamePreferences,
-    ):
-        return cls(
-            room_name=room_name,
-            white_cards=get_n_random_white_cards(
-                db, round_count * 15, allowed_decks=preferences.deck_preferences
-            ),
-            black_cards=get_n_random_black_cards(
-                db, round_count, allowed_decks=preferences.deck_preferences
-            ),
-        )
 
     def save(self):
         os.makedirs("temp", exist_ok=True)
