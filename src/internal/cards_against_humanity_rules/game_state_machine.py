@@ -87,7 +87,7 @@ class GameStateMachine(BaseModel):
 
     def start_game(self):
         if len(self.players) >= 2:
-            self.players[0].elect_as_tzar()
+            self._elect_new_tzar()
             self.__next_active_black_card()
             self.state = GameStates.PLAYERS_SUBMITTING_CARDS
             self.save()
@@ -206,9 +206,9 @@ class GameStateMachine(BaseModel):
                 p.cards_in_hand += white_cards_for_player
                 for c in white_cards_for_player:
                     self.white_cards.remove(c)
-        self.__elect_new_tzar()
+        self._elect_new_tzar()
 
-    def __elect_new_tzar(self):
+    def _elect_new_tzar(self):
         player = random.choice(
             [
                 p

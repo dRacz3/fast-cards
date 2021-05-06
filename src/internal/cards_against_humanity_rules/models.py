@@ -60,6 +60,9 @@ class SelectWinningSubmission(GameEvent):
     def event_id() -> int:
         return 2
 
+    def __hash__(self):
+        return hash(str(self.dict()))
+
 
 class CardsAgainstHumanityPlayer(BaseModel):
     username: str

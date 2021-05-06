@@ -18,15 +18,14 @@ class GodIsDeadModeStateMachine(GameStateMachine):
     def player_select_winner(self, username: str, awarded: SelectWinningSubmission):
         self.winner_votes[username] = awarded
 
-        if len(self.winner_votes.keys()):
-            vote_counter = Counter(self.winner_votes.values())
-            _, submission = vote_counter.most_common(1)
-            self.select_winner(SelectWinningSubmission(submission=submission))
+        if len(self.winner_votes.keys()) == len(self.players):
+            vote_counter = Counter(list(self.winner_votes.values()))
+            submission, _ = vote_counter.most_common(1)[0]
+            self.select_winner(submission)
             self.winner_votes = {}
 
     def tzar(self) -> Optional[CardsAgainstHumanityPlayer]:
         return None
 
-    def __elect_new_tzar(self):
-        print("[__elect_new_tzar] Using subclass")
-        self.save()
+    def _elect_new_tzar(self):
+        pass

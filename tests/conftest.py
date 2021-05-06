@@ -5,10 +5,14 @@ from sqlalchemy.orm import Session
 from starlette.testclient import TestClient
 
 import src.application
+from src.cards.crud import drop_all_cards
 from src.database.database import SessionLocal
 from src.database.database_models import User
 from src.dependencies import get_game_mapper
-from src.utils.bootstrapping import load_hungarian_cards_to_dabase
+from src.utils.bootstrapping import (
+    load_hungarian_cards_to_dabase,
+    load_offical_decks_to_game,
+)
 
 
 def drop_table_content(db: Session, table_model: Any):
@@ -93,6 +97,17 @@ def prefill_cards_to_database(database_connection):
     def _load():
         db = database_connection
         load_hungarian_cards_to_dabase(db, "resources/hungarian_cards.json")
+        return
+
+    yield _load
+
+
+@pytest.fixture()
+def prefill_official_cards_to_database(database_connection):
+    def _load():
+        db = database_connection
+        drop_all_cards(db)
+        load_offical_decks_to_game(db, "resources/official-decks.json", deck_limit=5)
         return
 
     yield _load

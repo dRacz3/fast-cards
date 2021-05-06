@@ -12,9 +12,9 @@ from src.internal.cards_against_humanity_rules.models import GamePreferences, Ga
 
 class GameFactory:
     @staticmethod
-    def new_session(
-        room_name: str, round_count: int, db: Session, preferences: GamePreferences
-    ):
+    def new_session(room_name: str, db: Session, preferences: GamePreferences):
+
+        round_count = preferences.max_round_count
         if preferences.mode == GameModes.GOD_IS_DEAD:
             return GodIsDeadModeStateMachine(
                 room_name=room_name,

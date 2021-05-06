@@ -7,9 +7,7 @@ from src.internal.cards_against_humanity_rules.game_factory import GameFactory
 from src.internal.cards_against_humanity_rules.game_related_exceptions import (
     LogicalError,
 )
-from src.internal.cards_against_humanity_rules.game_state_machine import (
-    GameStateMachine,
-)
+
 from src.internal.cards_against_humanity_rules.models import (
     GameEvent,
     PlayerSubmitCards,
@@ -33,7 +31,7 @@ class GameEventProcessor:
         preferences: GamePreferences,
     ):
         self.session = GameFactory.new_session(
-            room_name, round_count=10, db=db, preferences=preferences
+            room_name, db=db, preferences=preferences
         )
         self.event_mapping: Dict[Any, Reaction] = {
             PlayerSubmitCards.event_id(): Reaction(
@@ -66,6 +64,9 @@ class GameEventProcessor:
             raise LogicalError(
                 f"{sender_name} tried to select winner, but the tzar is {tzars[0]}"
             )
+
+    def event_loop(self):
+        pass
 
 
 class GameEventMapper:
