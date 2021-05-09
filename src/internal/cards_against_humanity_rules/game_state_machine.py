@@ -4,9 +4,7 @@ import random
 from typing import List, Optional, Dict
 
 from pydantic import BaseModel, Field
-from sqlalchemy.orm import Session
 
-from src.cards.crud import get_n_random_white_cards, get_n_random_black_cards
 from src.cards.models import BlackCard, WhiteCard
 from src.internal.cards_against_humanity_rules.game_related_exceptions import (
     InvalidPlayerAction,
@@ -23,7 +21,6 @@ from src.internal.cards_against_humanity_rules.models import (
     SelectWinningSubmission,
     PlayerOutsideView,
     LastWinnerInfo,
-    GamePreferences,
     GameModes,
 )
 
@@ -144,12 +141,20 @@ class GameStateMachine(BaseModel):
                 f"Current player list : {self.players}"
             )
 
-    def select_winner(self, winner: SelectWinningSubmission):
-        """
-        Normally the tzar could select a winner.
-        :param winner:
-        :return:
-        """
+    def select_winner(self, sender_name,  winner: SelectWinningSubmission):
+        tzars = [
+            p for p in self.players if p.current_role == CardsAgainstHumanityRoles.TZAR
+        ]
+        if len(tzars) != 1:
+            raise LogicalError(f"There should be only one tzar. Current tzars: {tzars}")
+
+        if tzars[0].username != sender_name:
+            raise LogicalError(
+                f"{sender_name} tried to select winner, but the tzar is {tzars[0]}"
+            )
+        return self._select_winner(winner)
+
+    def _select_winner(self, winner: SelectWinningSubmission):
         for username, submission in self.player_submissions.items():
             if submission == winner.submission:
                 player = self.__lookup_player_by_name(username)

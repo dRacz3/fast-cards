@@ -24,6 +24,7 @@ from src.internal.cards_against_humanity_rules.models import (
     PlayerSubmitCards,
     SelectWinningSubmission,
     GamePreferences,
+    GameModes,
 )
 from src.websocket.connection_manager import ConnectionManager, SENDER_TYPES
 from src.websocket.models import WebSocketMessage
@@ -233,3 +234,8 @@ def list_rooms(game_mapper: GameEventMapper = Depends(get_game_mapper)):
     return RoomListing(
         rooms=[Room(room_name=r.room_name, player_count=len(r.players)) for r in room]
     )
+
+
+@router.get(f"/modes", response_model=List[str])
+def list_modes():
+    return [GameModes.NORMAL, GameModes.GOD_IS_DEAD]

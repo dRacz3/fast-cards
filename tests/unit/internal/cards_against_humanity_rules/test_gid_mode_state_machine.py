@@ -69,9 +69,9 @@ def test_player_select_winner_behaviour(
                 )
                 sws = SelectWinningSubmission(submission=sub)
                 print(sm)
-                sm.player_select_winner(
-                    p,
-                    sws,
+                sm.select_winner(
+                    sender_name=p,
+                    winner=sws,
                 )
 
             assert sm.player_lookup[players[0]].points == i + 1

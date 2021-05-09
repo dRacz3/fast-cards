@@ -12,7 +12,6 @@ from src.internal.cards_against_humanity_rules.models import (
     GameEvent,
     PlayerSubmitCards,
     SelectWinningSubmission,
-    CardsAgainstHumanityRoles,
     GamePreferences,
 )
 
@@ -39,7 +38,6 @@ class GameEventProcessor:
             ),
             SelectWinningSubmission.event_id(): Reaction(
                 event_callback=self.session.select_winner,
-                validation=self.winner_select_validation,
             ),
         }
 
@@ -47,23 +45,8 @@ class GameEventProcessor:
         if isinstance(event, PlayerSubmitCards):
             self.session.player_submit_card(event)
         if isinstance(event, SelectWinningSubmission):
-            self.winner_select_validation(event, sender_name)
-            self.session.select_winner(event)
+            self.session.select_winner(sender_name=sender_name, winner=event)
         self.session.save()
-
-    def winner_select_validation(self, event: GameEvent, sender_name: str):
-        tzars = [
-            p
-            for p in self.session.players
-            if p.current_role == CardsAgainstHumanityRoles.TZAR
-        ]
-        if len(tzars) != 1:
-            raise LogicalError(f"There should be only one tzar. Current tzars: {tzars}")
-
-        if tzars[0].username != sender_name:
-            raise LogicalError(
-                f"{sender_name} tried to select winner, but the tzar is {tzars[0]}"
-            )
 
     def event_loop(self):
         pass

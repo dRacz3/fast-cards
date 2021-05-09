@@ -15,13 +15,13 @@ class GodIsDeadModeStateMachine(GameStateMachine):
     winner_votes: Dict[str, SelectWinningSubmission] = {}
     mode: str = GameModes.GOD_IS_DEAD
 
-    def player_select_winner(self, username: str, awarded: SelectWinningSubmission):
-        self.winner_votes[username] = awarded
+    def select_winner(self, sender_name: str, winner: SelectWinningSubmission):
+        self.winner_votes[sender_name] = winner
 
         if len(self.winner_votes.keys()) == len(self.players):
             vote_counter = Counter(list(self.winner_votes.values()))
             submission, _ = vote_counter.most_common(1)[0]
-            self.select_winner(submission)
+            self._select_winner(submission)
             self.winner_votes = {}
 
     def tzar(self) -> Optional[CardsAgainstHumanityPlayer]:

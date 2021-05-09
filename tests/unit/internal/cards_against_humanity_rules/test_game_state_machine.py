@@ -118,7 +118,10 @@ def test_game_starts_only_with_enough_players(
     the_winner_player: CardsAgainstHumanityPlayer = everyone_else[0]
     winning_submission = the_winner_player.submissions[-1]
 
-    sess.select_winner(SelectWinningSubmission(submission=winning_submission))
+    sess.select_winner(
+        sender_name=sess.tzar.username,
+        winner=SelectWinningSubmission(submission=winning_submission),
+    )
 
     ### CHECK AWARDED POINTS ###
     for p in everyone_else:
@@ -229,12 +232,13 @@ def test_logical_error_when_selected_winner_submission_does_not_exist(
 
     with pytest.raises(InvalidPlayerAction):
         sess.select_winner(
-            SelectWinningSubmission(
+            sender_name=sess.tzar.username,
+            winner=SelectWinningSubmission(
                 submission=Submission(
                     black_card=sess.currently_active_card,
                     white_cards=sess.white_cards[0 : sess.currently_active_card.pick],
                 )
-            )
+            ),
         )
 
 
@@ -262,7 +266,10 @@ def test_game_has_ended_when_ran_out_of_black_cards(default_game_with_3_players)
     winning_submission = the_winner_player.submissions[-1]
 
     with pytest.raises(GameHasEnded):
-        sess.select_winner(SelectWinningSubmission(submission=winning_submission))
+        sess.select_winner(
+            sender_name=sess.tzar.username,
+            winner=SelectWinningSubmission(submission=winning_submission),
+        )
 
 
 def test_game_has_ended_when_ran_out_of_white_cards(default_game_with_3_players):
@@ -291,7 +298,10 @@ def test_game_has_ended_when_ran_out_of_white_cards(default_game_with_3_players)
     winning_submission = the_winner_player.submissions[-1]
 
     with pytest.raises(GameHasEnded):
-        sess.select_winner(SelectWinningSubmission(submission=winning_submission))
+        sess.select_winner(
+            sender_name=sess.tzar.username,
+            winner=SelectWinningSubmission(submission=winning_submission),
+        )
 
 
 def test_game_has_ended_when_player_reached_points_to_win(default_game_with_3_players):
@@ -318,4 +328,7 @@ def test_game_has_ended_when_player_reached_points_to_win(default_game_with_3_pl
     winning_submission = the_winner_player.submissions[-1]
 
     with pytest.raises(GameHasEnded):
-        sess.select_winner(SelectWinningSubmission(submission=winning_submission))
+        sess.select_winner(
+            sender_name=sess.tzar.username,
+            winner=SelectWinningSubmission(submission=winning_submission),
+        )
