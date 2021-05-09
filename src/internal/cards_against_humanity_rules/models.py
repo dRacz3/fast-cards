@@ -63,6 +63,11 @@ class SelectWinningSubmission(GameEvent):
     def __hash__(self):
         return hash(str(self.dict()))
 
+    def __str__(self):
+        combos = self.submission.black_card.text.split("_")
+        return f"{list(zip(combos, [card.text for card in self.submission.white_cards]))}"
+    def __repr__(self):
+        return self.__str__()
 
 class CardsAgainstHumanityPlayer(BaseModel):
     username: str

@@ -167,10 +167,11 @@ async def select_winner(
         room.on_new_event(winner, user.user_id)
     except GameHasEnded as e:
         pass  # It's fine. Just proceed.
+    # TODO: event broadcast shall be triggered somehow inside from the SM
     await broadcast_event(
         room_name,
         conman,
-        f"{user.user_id} selected the winner, it is : {room.session.last_winner.username}",
+        f"{user.user_id} voted for the winner",
     )
 
     return GameStatePlayerView.from_game_state(room.session, user.user_id)

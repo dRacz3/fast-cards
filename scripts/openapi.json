@@ -2,7 +2,7 @@
     "openapi": "3.0.2",
     "info": {
         "title": "fast-cards",
-        "version": "0.0.1"
+        "version": "0.1.0"
     },
     "paths": {
         "/auth/signup": {
@@ -963,8 +963,12 @@
                         "type": "string",
                         "default": "NORMAL"
                     },
-                    "last_winner": {
-                        "$ref": "#/components/schemas/LastWinnerInfo"
+                    "last_winners": {
+                        "title": "Last Winners",
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/LastWinnerInfo"
+                        }
                     },
                     "round_count": {
                         "title": "Round Count",
@@ -1033,8 +1037,17 @@
                             "$ref": "#/components/schemas/PlayerOutsideView"
                         }
                     },
-                    "last_winner": {
-                        "$ref": "#/components/schemas/LastWinnerInfo"
+                    "last_winners": {
+                        "title": "Last Winners",
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/LastWinnerInfo"
+                        }
+                    },
+                    "mode": {
+                        "title": "Mode",
+                        "type": "string",
+                        "default": "NORMAL"
                     }
                 }
             },

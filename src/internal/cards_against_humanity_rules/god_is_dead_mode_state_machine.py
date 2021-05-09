@@ -19,9 +19,17 @@ class GodIsDeadModeStateMachine(GameStateMachine):
         self.winner_votes[sender_name] = winner
 
         if len(self.winner_votes.keys()) == len(self.players):
-            vote_counter = Counter(list(self.winner_votes.values()))
-            submission, _ = vote_counter.most_common(1)[0]
-            self._select_winner(submission)
+            winner_counter : Dict[SelectWinningSubmission, int]= {}
+            for vote in self.winner_votes.values():
+                if vote in winner_counter.keys():
+                    winner_counter[vote] += 1
+                else:
+                    winner_counter[vote] = 1
+
+            max_vote_count = max(list(winner_counter.values()))
+            winners = list(filter(lambda v : v[1] == max_vote_count, winner_counter.items()))
+            winning_subbmissions = [s[0] for s in winners]
+            self._select_winner(winning_subbmissions)
             self.winner_votes = {}
 
     def tzar(self) -> Optional[CardsAgainstHumanityPlayer]:
@@ -29,3 +37,7 @@ class GodIsDeadModeStateMachine(GameStateMachine):
 
     def _elect_new_tzar(self):
         pass
+
+    def _advance(self):
+        if len(self.player_submissions.keys()) == len(self.players):
+            self._close_round()
