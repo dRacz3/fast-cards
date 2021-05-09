@@ -165,7 +165,7 @@ class GameStateMachine(BaseModel):
 
         # TODO : nicer pls..
         game_has_ended = False
-        game_end_reason = ''
+        game_end_reason = ""
         if len(winners) > 0:
             for winner in winners:
                 for username, submission in self.player_submissions.items():
@@ -177,14 +177,17 @@ class GameStateMachine(BaseModel):
                             )
                         try:
                             player.reward_points(1)
-                            last_winners.append(LastWinnerInfo(
-                                username=player.username, submission=winner.submission
-                            ))
+                            last_winners.append(
+                                LastWinnerInfo(
+                                    username=player.username,
+                                    submission=winner.submission,
+                                )
+                            )
                         # This may yield a bug, when 2 players have the same score each.
                         # And both shall receive a same point. TODO: Fix multiple winners bug
                         except GameHasEnded as e:
                             game_has_ended = True
-                            game_end_reason += f', {str(e)}'
+                            game_end_reason += f", {str(e)}"
             self.last_winners = last_winners
 
             if game_has_ended:
@@ -197,7 +200,8 @@ class GameStateMachine(BaseModel):
             else:
                 raise InvalidPlayerAction(
                     f"Number of winners does not match the expected."
-                    f"Selected: {winners}, but really it is : {last_winners}")
+                    f"Selected: {winners}, but really it is : {last_winners}"
+                )
 
     def __lookup_player_by_name(
         self, username: str

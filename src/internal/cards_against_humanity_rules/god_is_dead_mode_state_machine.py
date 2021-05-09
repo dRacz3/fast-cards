@@ -1,5 +1,5 @@
 from collections import Counter
-from typing import Optional, Dict
+from typing import Optional, Dict, List, Tuple
 
 from src.internal.cards_against_humanity_rules.game_state_machine import (
     GameStateMachine,
@@ -19,7 +19,7 @@ class GodIsDeadModeStateMachine(GameStateMachine):
         self.winner_votes[sender_name] = winner
 
         if len(self.winner_votes.keys()) == len(self.players):
-            winner_counter : Dict[SelectWinningSubmission, int]= {}
+            winner_counter: Dict[SelectWinningSubmission, int] = {}
             for vote in self.winner_votes.values():
                 if vote in winner_counter.keys():
                     winner_counter[vote] += 1
@@ -27,7 +27,9 @@ class GodIsDeadModeStateMachine(GameStateMachine):
                     winner_counter[vote] = 1
 
             max_vote_count = max(list(winner_counter.values()))
-            winners = list(filter(lambda v : v[1] == max_vote_count, winner_counter.items()))
+            winners: List[Tuple[SelectWinningSubmission, int]] = list(
+                filter(lambda v: v[1] == max_vote_count, winner_counter.items())
+            )
             winning_subbmissions = [s[0] for s in winners]
             self._select_winner(winning_subbmissions)
             self.winner_votes = {}
