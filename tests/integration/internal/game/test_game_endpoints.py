@@ -19,6 +19,8 @@ from src.internal.cards_against_humanity_rules.models import (
     GameStates,
     SelectWinningSubmission,
     Submission,
+    GamePreferences,
+    GameModes,
 )
 from src.routers.game import GameEndpoints
 from tests.conftest import default_header_with_token
@@ -36,11 +38,13 @@ class GameTestClient:
             headers=self.header,
         )
 
-    def new_game(self):
+    def new_game(self, body: dict = None):
+        if body is None:
+            body = {}
         return self.test_client.post(
             f"/game/{GameEndpoints.NEW}?room_name={self.room_name}",
             headers=self.header,
-            json={},
+            json=body,
         )
 
     def player_join(self):
@@ -143,6 +147,27 @@ def test_game_creation(
 
     start_response = client1.start_game()
     assert start_response.status_code == status.HTTP_200_OK, start_response.content
+
+
+def test_game_creation_with_gidmode(
+    valid_user_token, test_client, get_clean_game_mapper, prefill_cards_to_database
+):
+    prefill_cards_to_database()
+    mapper = get_clean_game_mapper
+    room_name = "test_room"
+    client1 = GameTestClient(valid_user_token("user1"), test_client, room_name)
+    client2 = GameTestClient(valid_user_token("user2"), test_client, room_name)
+
+    new_game_response = client1.new_game(
+        {"preferences": GamePreferences.god_is_dead_mode().dict()}
+    )
+
+    assert new_game_response.status_code == status.HTTP_200_OK
+    assert client1.player_join().status_code == status.HTTP_200_OK
+    assert client2.player_join().status_code == status.HTTP_200_OK
+    room = mapper.get_game(room_name)
+    assert room is not None
+    room.session.mode = GameModes.GOD_IS_DEAD
 
 
 def test_game_creation_fails_with_duplicate_name(

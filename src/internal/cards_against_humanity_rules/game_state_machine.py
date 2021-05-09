@@ -141,7 +141,7 @@ class GameStateMachine(BaseModel):
                 f"Current player list : {self.players}"
             )
 
-    def select_winner(self, sender_name,  winner: SelectWinningSubmission):
+    def select_winner(self, sender_name, winner: SelectWinningSubmission):
         tzars = [
             p for p in self.players if p.current_role == CardsAgainstHumanityRoles.TZAR
         ]
