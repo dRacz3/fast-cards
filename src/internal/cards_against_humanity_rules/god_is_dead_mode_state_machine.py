@@ -22,15 +22,15 @@ class GodIsDeadModeStateMachine(GameStateMachine):
         if len(self.winner_votes.keys()) == len(self.players):
             winner_counter: Dict[SelectWinningSubmission, int] = {}
             for vote in self.winner_votes.values():
-                if vote in winner_counter.keys():
+                if vote in winner_counter:
                     winner_counter[vote] += 1
                 else:
                     winner_counter[vote] = 1
 
             max_vote_count = max(list(winner_counter.values()))
-            winners: List[Tuple[SelectWinningSubmission, int]] = list(
-                filter(lambda v: v[1] == max_vote_count, winner_counter.items())
-            )
+            winners: List[Tuple[SelectWinningSubmission, int]] = [
+                c for c in winner_counter.items() if c[1] == max_vote_count
+            ]
             winning_subbmissions = [s[0] for s in winners]
             self._select_winner(winning_subbmissions)
             self.winner_votes = {}
