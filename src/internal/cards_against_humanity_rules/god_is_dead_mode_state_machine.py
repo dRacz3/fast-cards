@@ -17,6 +17,7 @@ class GodIsDeadModeStateMachine(GameStateMachine):
 
     def select_winner(self, sender_name: str, winner: SelectWinningSubmission):
         self.winner_votes[sender_name] = winner
+        self.player_lookup[sender_name].votes = [winner]
 
         if len(self.winner_votes.keys()) == len(self.players):
             winner_counter: Dict[SelectWinningSubmission, int] = {}
@@ -33,6 +34,7 @@ class GodIsDeadModeStateMachine(GameStateMachine):
             winning_subbmissions = [s[0] for s in winners]
             self._select_winner(winning_subbmissions)
             self.winner_votes = {}
+            self.player_lookup[sender_name].votes = []
 
     def tzar(self) -> Optional[CardsAgainstHumanityPlayer]:
         return None

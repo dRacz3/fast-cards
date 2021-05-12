@@ -80,6 +80,7 @@ class CardsAgainstHumanityPlayer(BaseModel):
     current_role: str = CardsAgainstHumanityRoles.PLAYER
 
     submissions: List[Submission] = Field(default_factory=list)
+    votes: List[SelectWinningSubmission] = Field(default_factory=list)
 
     def __hash__(self):
         return hash(str(self.dict()))
@@ -110,10 +111,12 @@ class PlayerOutsideView(BaseModel):
     points: int = 0
     current_role: str = CardsAgainstHumanityRoles.PLAYER
     submissions: List[Submission] = Field(default_factory=list)
+    votes: List[SelectWinningSubmission] = Field(default_factory=list)
 
     @classmethod
     def from_player(cls, player: CardsAgainstHumanityPlayer):
-        return cls(**player.copy(exclude={"cards_in_hand"}).dict())
+        p = player.copy(exclude={"cards_in_hand"}).dict()
+        return cls(**p)
 
 
 class GamePreferences(BaseModel):
