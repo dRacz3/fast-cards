@@ -230,7 +230,7 @@ class GameStateMachine(BaseModel):
             if card_count < CARDS_IN_PLAYER_HAND:
                 required_card_count = CARDS_IN_PLAYER_HAND - card_count
                 if required_card_count > len(self.white_cards):
-                    self.__finish_game("No more white cards left")
+                    break
                 white_cards_for_player = self.white_cards[0:required_card_count]
                 print(f"Adding cards to {p.username}=> {white_cards_for_player}")
                 p.cards_in_hand += white_cards_for_player
