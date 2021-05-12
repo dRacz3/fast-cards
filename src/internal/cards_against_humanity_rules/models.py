@@ -23,6 +23,11 @@ class GameStates:
     FINISHED = "FINISHED"
 
 
+class GameModes:
+    NORMAL = "NORMAL"
+    GOD_IS_DEAD = "GOD_IS_DEAD"
+
+
 class Submission(BaseModel):
     black_card: BlackCard
     white_cards: List[WhiteCard]
@@ -55,6 +60,18 @@ class SelectWinningSubmission(GameEvent):
     def event_id() -> int:
         return 2
 
+    def __hash__(self):
+        return hash(str(self.dict()))
+
+    def __str__(self):
+        combos = self.submission.black_card.text.split("_")
+        return (
+            f"{list(zip(combos, [card.text for card in self.submission.white_cards]))}"
+        )
+
+    def __repr__(self):
+        return self.__str__()
+
 
 class CardsAgainstHumanityPlayer(BaseModel):
     username: str
@@ -63,6 +80,7 @@ class CardsAgainstHumanityPlayer(BaseModel):
     current_role: str = CardsAgainstHumanityRoles.PLAYER
 
     submissions: List[Submission] = Field(default_factory=list)
+    votes: List[SelectWinningSubmission] = Field(default_factory=list)
 
     def __hash__(self):
         return hash(str(self.dict()))
@@ -93,16 +111,19 @@ class PlayerOutsideView(BaseModel):
     points: int = 0
     current_role: str = CardsAgainstHumanityRoles.PLAYER
     submissions: List[Submission] = Field(default_factory=list)
+    votes: List[SelectWinningSubmission] = Field(default_factory=list)
 
     @classmethod
     def from_player(cls, player: CardsAgainstHumanityPlayer):
-        return cls(**player.copy(exclude={"cards_in_hand"}).dict())
+        p = player.copy(exclude={"cards_in_hand"}).dict()
+        return cls(**p)
 
 
 class GamePreferences(BaseModel):
     deck_preferences: Optional[List[DeckMetaData]] = None
     points_needed_for_win: int = 10
     max_round_count: int = 15
+    mode: str = GameModes.NORMAL
 
     @classmethod
     def default(cls):
@@ -121,3 +142,7 @@ class GamePreferences(BaseModel):
                 )
             ],
         )
+
+    @classmethod
+    def god_is_dead_mode(cls):
+        return cls(mode=GameModes.GOD_IS_DEAD)

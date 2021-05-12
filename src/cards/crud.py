@@ -108,3 +108,14 @@ def get_deck_list(db: Session) -> List[DeckMetaData]:
         )
         for d in decks_in_db
     ]
+
+
+def drop_all_cards(db: Session):
+    for c in db.query(database_models.WhiteCard).all():
+        db.delete(c)
+    for b in db.query(database_models.BlackCard).all():
+        db.delete(b)
+    for d in db.query(database_models.DeckMetaData).all():
+        db.delete(d)
+
+    db.commit()

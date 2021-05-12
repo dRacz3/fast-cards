@@ -24,6 +24,7 @@ from src.internal.cards_against_humanity_rules.models import (
     PlayerSubmitCards,
     SelectWinningSubmission,
     GamePreferences,
+    GameModes,
 )
 from src.websocket.connection_manager import ConnectionManager, SENDER_TYPES
 from src.websocket.models import WebSocketMessage
@@ -166,10 +167,11 @@ async def select_winner(
         room.on_new_event(winner, user.user_id)
     except GameHasEnded as e:
         pass  # It's fine. Just proceed.
+    # TODO: event broadcast shall be triggered somehow inside from the SM
     await broadcast_event(
         room_name,
         conman,
-        f"{user.user_id} selected the winner, it is : {room.session.last_winner.username}",
+        f"{user.user_id} voted for the winner",
     )
 
     return GameStatePlayerView.from_game_state(room.session, user.user_id)
@@ -233,3 +235,8 @@ def list_rooms(game_mapper: GameEventMapper = Depends(get_game_mapper)):
     return RoomListing(
         rooms=[Room(room_name=r.room_name, player_count=len(r.players)) for r in room]
     )
+
+
+@router.get(f"/modes", response_model=List[str])
+def list_modes():
+    return [GameModes.NORMAL, GameModes.GOD_IS_DEAD]

@@ -2,7 +2,7 @@
     "openapi": "3.0.2",
     "info": {
         "title": "fast-cards",
-        "version": "0.0.1"
+        "version": "0.1.0"
     },
     "paths": {
         "/auth/signup": {
@@ -761,6 +761,36 @@
                     }
                 ]
             }
+        },
+        "/game/modes": {
+            "get": {
+                "tags": [
+                    "cards-against"
+                ],
+                "summary": "List Modes",
+                "operationId": "list_modes_game_modes_get",
+                "responses": {
+                    "200": {
+                        "description": "Successful Response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "title": "Response List Modes Game Modes Get",
+                                    "type": "array",
+                                    "items": {
+                                        "type": "string"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "JWTBearer": []
+                    }
+                ]
+            }
         }
     },
     "components": {
@@ -832,6 +862,13 @@
                         "items": {
                             "$ref": "#/components/schemas/Submission"
                         }
+                    },
+                    "votes": {
+                        "title": "Votes",
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/SelectWinningSubmission"
+                        }
                     }
                 }
             },
@@ -888,6 +925,11 @@
                         "title": "Max Round Count",
                         "type": "integer",
                         "default": 15
+                    },
+                    "mode": {
+                        "title": "Mode",
+                        "type": "string",
+                        "default": "NORMAL"
                     }
                 }
             },
@@ -923,8 +965,17 @@
                         "type": "string",
                         "default": "STARTING"
                     },
-                    "last_winner": {
-                        "$ref": "#/components/schemas/LastWinnerInfo"
+                    "mode": {
+                        "title": "Mode",
+                        "type": "string",
+                        "default": "NORMAL"
+                    },
+                    "last_winners": {
+                        "title": "Last Winners",
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/LastWinnerInfo"
+                        }
                     },
                     "round_count": {
                         "title": "Round Count",
@@ -993,8 +1044,17 @@
                             "$ref": "#/components/schemas/PlayerOutsideView"
                         }
                     },
-                    "last_winner": {
-                        "$ref": "#/components/schemas/LastWinnerInfo"
+                    "last_winners": {
+                        "title": "Last Winners",
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/LastWinnerInfo"
+                        }
+                    },
+                    "mode": {
+                        "title": "Mode",
+                        "type": "string",
+                        "default": "NORMAL"
                     }
                 }
             },
@@ -1088,6 +1148,13 @@
                         "type": "array",
                         "items": {
                             "$ref": "#/components/schemas/Submission"
+                        }
+                    },
+                    "votes": {
+                        "title": "Votes",
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/SelectWinningSubmission"
                         }
                     }
                 }

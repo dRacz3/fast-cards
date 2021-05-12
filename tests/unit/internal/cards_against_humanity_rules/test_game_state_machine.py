@@ -2,6 +2,7 @@ from typing import List
 
 import pytest
 
+from src.internal.cards_against_humanity_rules.game_factory import GameFactory
 from src.internal.cards_against_humanity_rules.game_related_exceptions import (
     InvalidPlayerAction,
     LogicalError,
@@ -27,7 +28,7 @@ from src.internal.cards_against_humanity_rules.models import (
 def default_game_with_3_players(database_connection, prefill_cards_to_database):
     prefill_cards_to_database()
     db = database_connection
-    sess = GameStateMachine.new_session("test", 5, db, GamePreferences.default())
+    sess = GameFactory.new_session("test", db, GamePreferences.default())
     ### STARTING GAME PHASE ######
     with pytest.raises(InvalidPlayerAction):
         sess.start_game()
@@ -44,9 +45,9 @@ def test_game_session_creation_and_user_assignment(
 ):
     prefill_cards_to_database()
     db = database_connection
-    sess = GameStateMachine.new_session("test", 5, db, GamePreferences.default())
+    sess = GameFactory.new_session("test", db, GamePreferences.default())
     assert len(sess.players) == 0
-    assert len(sess.black_cards) == 5
+    assert len(sess.black_cards) == 45
     assert len(sess.white_cards) > 15
 
     sess.player_join("Joe")
@@ -72,8 +73,8 @@ def test_game_starts_only_with_enough_players(
 ):
     prefill_cards_to_database()
     db = database_connection
-    sess: GameStateMachine = GameStateMachine.new_session(
-        "test", 5, db, GamePreferences.default()
+    sess: GameStateMachine = GameFactory.new_session(
+        "test", db, GamePreferences.default()
     )
     ### STARTING GAME PHASE ######
     with pytest.raises(InvalidPlayerAction):
@@ -117,7 +118,10 @@ def test_game_starts_only_with_enough_players(
     the_winner_player: CardsAgainstHumanityPlayer = everyone_else[0]
     winning_submission = the_winner_player.submissions[-1]
 
-    sess.select_winner(SelectWinningSubmission(submission=winning_submission))
+    sess.select_winner(
+        sender_name=sess.tzar.username,
+        winner=SelectWinningSubmission(submission=winning_submission),
+    )
 
     ### CHECK AWARDED POINTS ###
     for p in everyone_else:
@@ -228,12 +232,13 @@ def test_logical_error_when_selected_winner_submission_does_not_exist(
 
     with pytest.raises(InvalidPlayerAction):
         sess.select_winner(
-            SelectWinningSubmission(
+            sender_name=sess.tzar.username,
+            winner=SelectWinningSubmission(
                 submission=Submission(
                     black_card=sess.currently_active_card,
                     white_cards=sess.white_cards[0 : sess.currently_active_card.pick],
                 )
-            )
+            ),
         )
 
 
@@ -261,7 +266,10 @@ def test_game_has_ended_when_ran_out_of_black_cards(default_game_with_3_players)
     winning_submission = the_winner_player.submissions[-1]
 
     with pytest.raises(GameHasEnded):
-        sess.select_winner(SelectWinningSubmission(submission=winning_submission))
+        sess.select_winner(
+            sender_name=sess.tzar.username,
+            winner=SelectWinningSubmission(submission=winning_submission),
+        )
 
 
 def test_game_has_ended_when_ran_out_of_white_cards(default_game_with_3_players):
@@ -290,7 +298,10 @@ def test_game_has_ended_when_ran_out_of_white_cards(default_game_with_3_players)
     winning_submission = the_winner_player.submissions[-1]
 
     with pytest.raises(GameHasEnded):
-        sess.select_winner(SelectWinningSubmission(submission=winning_submission))
+        sess.select_winner(
+            sender_name=sess.tzar.username,
+            winner=SelectWinningSubmission(submission=winning_submission),
+        )
 
 
 def test_game_has_ended_when_player_reached_points_to_win(default_game_with_3_players):
@@ -317,4 +328,7 @@ def test_game_has_ended_when_player_reached_points_to_win(default_game_with_3_pl
     winning_submission = the_winner_player.submissions[-1]
 
     with pytest.raises(GameHasEnded):
-        sess.select_winner(SelectWinningSubmission(submission=winning_submission))
+        sess.select_winner(
+            sender_name=sess.tzar.username,
+            winner=SelectWinningSubmission(submission=winning_submission),
+        )

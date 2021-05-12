@@ -1,13 +1,11 @@
 import json
 import os
 import random
-from typing import List, Optional, Dict
+from typing import List, Optional, Dict, Union
 
 from pydantic import BaseModel, Field
-from sqlalchemy.orm import Session
 
-from src.cards.crud import get_n_random_white_cards, get_n_random_black_cards
-from src.cards.models import BlackCard, WhiteCard, DeckMetaData
+from src.cards.models import BlackCard, WhiteCard
 from src.internal.cards_against_humanity_rules.game_related_exceptions import (
     InvalidPlayerAction,
     LogicalError,
@@ -23,7 +21,7 @@ from src.internal.cards_against_humanity_rules.models import (
     SelectWinningSubmission,
     PlayerOutsideView,
     LastWinnerInfo,
-    GamePreferences,
+    GameModes,
 )
 
 
@@ -34,7 +32,8 @@ class GameStateMachine(BaseModel):
     white_cards: List[WhiteCard]
 
     state: str = GameStates.STARTING
-    last_winner: Optional[LastWinnerInfo]
+    mode: str = GameModes.NORMAL
+    last_winners: Optional[List[LastWinnerInfo]]
     round_count: int = 0
 
     currently_active_card: Optional[BlackCard] = None
@@ -85,7 +84,7 @@ class GameStateMachine(BaseModel):
 
     def start_game(self):
         if len(self.players) >= 2:
-            self.players[0].elect_as_tzar()
+            self._elect_new_tzar()
             self.__next_active_black_card()
             self.state = GameStates.PLAYERS_SUBMITTING_CARDS
             self.save()
@@ -131,10 +130,7 @@ class GameStateMachine(BaseModel):
             for card in submit_event.cards:
                 player.cards_in_hand.remove(card)
 
-            if (
-                len(self.player_submissions.keys()) == len(self.players) - 1
-            ):  # -1 is the Tzar
-                self.__close_round()
+            self._advance()
 
         else:
             raise LogicalError(
@@ -142,29 +138,70 @@ class GameStateMachine(BaseModel):
                 f"Current player list : {self.players}"
             )
 
-    def select_winner(self, winner: SelectWinningSubmission):
-        for username, submission in self.player_submissions.items():
-            if submission == winner.submission:
-                player = self.__lookup_player_by_name(username)
-                if player is None:
-                    raise LogicalError(
-                        "Selected submission belongs to a player that is not in the game anymore."
-                    )
-                try:
-                    player.reward_points(1)
-                    self.last_winner = LastWinnerInfo(
-                        username=player.username, submission=winner.submission
-                    )
-                except GameHasEnded as e:
-                    self.__finish_game(e)
-                self.__start_new_round()
-                return
+    def _advance(self):
+        if len(self.player_submissions.keys()) == len(self.players) - 1:
+            self._close_round()
 
-        raise InvalidPlayerAction(
-            f"Selected submission does not exist! "
-            f"Selected: {winner.submission}, "
-            f"Player submissions: {self.player_submissions}"
-        )
+    def select_winner(self, sender_name, winner: SelectWinningSubmission):
+        tzars = [
+            p for p in self.players if p.current_role == CardsAgainstHumanityRoles.TZAR
+        ]
+        if len(tzars) != 1:
+            raise LogicalError(f"There should be only one tzar. Current tzars: {tzars}")
+
+        if tzars[0].username != sender_name:
+            raise LogicalError(
+                f"{sender_name} tried to select winner, but the tzar is {tzars[0]}"
+            )
+        return self._select_winner(winner)
+
+    def _select_winner(
+        self, winners: Union[SelectWinningSubmission, List[SelectWinningSubmission]]
+    ):
+        if not isinstance(winners, List):
+            winners = [winners]
+
+        last_winners = []
+
+        # TODO : nicer pls..
+        game_has_ended = False
+        game_end_reason = ""
+        if len(winners) > 0:
+            for winner in winners:
+                for username, submission in self.player_submissions.items():
+                    if submission == winner.submission:
+                        player = self.__lookup_player_by_name(username)
+                        if player is None:
+                            raise LogicalError(
+                                "Selected submission belongs to a player that is not in the game anymore."
+                            )
+                        try:
+                            player.reward_points(1)
+                            last_winners.append(
+                                LastWinnerInfo(
+                                    username=player.username,
+                                    submission=winner.submission,
+                                )
+                            )
+                        # This may yield a bug, when 2 players have the same score each.
+                        # And both shall receive a same point. TODO: Fix multiple winners bug
+                        except GameHasEnded as e:
+                            game_has_ended = True
+                            game_end_reason += f", {str(e)}"
+            self.last_winners = last_winners
+
+            if game_has_ended:
+                self.__finish_game(game_end_reason)
+
+            self.__start_new_round()
+
+            if len(self.last_winners) == len(winners):
+                return
+            else:
+                raise InvalidPlayerAction(
+                    f"Number of winners does not match the expected."
+                    f"Selected: {winners}, but really it is : {last_winners}"
+                )
 
     def __lookup_player_by_name(
         self, username: str
@@ -176,7 +213,7 @@ class GameStateMachine(BaseModel):
             self.__finish_game("Game has ended, no more black cards left.")
         self.currently_active_card = self.black_cards.pop()
 
-    def __close_round(self):
+    def _close_round(self):
         self.save()
         self.state = GameStates.TZAR_CHOOSING_WINNER
 
@@ -199,9 +236,9 @@ class GameStateMachine(BaseModel):
                 p.cards_in_hand += white_cards_for_player
                 for c in white_cards_for_player:
                     self.white_cards.remove(c)
-        self.__elect_new_tzar()
+        self._elect_new_tzar()
 
-    def __elect_new_tzar(self):
+    def _elect_new_tzar(self):
         player = random.choice(
             [
                 p
@@ -220,24 +257,6 @@ class GameStateMachine(BaseModel):
     def __finish_game(self, reason):
         self.state = GameStates.FINISHED
         raise GameHasEnded(reason)
-
-    @classmethod
-    def new_session(
-        cls,
-        room_name: str,
-        round_count: int,
-        db: Session,
-        preferences: GamePreferences,
-    ):
-        return cls(
-            room_name=room_name,
-            white_cards=get_n_random_white_cards(
-                db, round_count * 15, allowed_decks=preferences.deck_preferences
-            ),
-            black_cards=get_n_random_black_cards(
-                db, round_count, allowed_decks=preferences.deck_preferences
-            ),
-        )
 
     def save(self):
         os.makedirs("temp", exist_ok=True)
@@ -260,7 +279,8 @@ class GameStatePlayerView(BaseModel):
     currently_active_card: Optional[BlackCard] = None
     player_submissions: Dict[str, Submission] = Field(default_factory=dict)
     other_players: List[PlayerOutsideView]
-    last_winner: Optional[LastWinnerInfo]
+    last_winners: Optional[List[LastWinnerInfo]]
+    mode: str = GameModes.NORMAL
 
     @classmethod
     def from_game_state(cls, s: GameStateMachine, username: str):
@@ -273,7 +293,8 @@ class GameStatePlayerView(BaseModel):
             player_submissions=s.player_submissions,
             other_players=[PlayerOutsideView.from_player(p) for p in s.players],
             player=s.player_lookup[username],
-            last_winner=s.last_winner,
+            last_winners=s.last_winners,
+            mode=s.mode,
         )
 
     def __hash__(self):

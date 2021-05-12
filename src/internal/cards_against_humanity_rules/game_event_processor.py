@@ -1,20 +1,17 @@
 from dataclasses import dataclass
-from typing import Dict, Callable, Optional, Any, List
+from typing import Dict, Callable, Optional, Any
 
 from sqlalchemy.orm import Session
 
-from src.cards.models import DeckMetaData
+from src.internal.cards_against_humanity_rules.game_factory import GameFactory
 from src.internal.cards_against_humanity_rules.game_related_exceptions import (
     LogicalError,
 )
-from src.internal.cards_against_humanity_rules.game_state_machine import (
-    GameStateMachine,
-)
+
 from src.internal.cards_against_humanity_rules.models import (
     GameEvent,
     PlayerSubmitCards,
     SelectWinningSubmission,
-    CardsAgainstHumanityRoles,
     GamePreferences,
 )
 
@@ -32,8 +29,8 @@ class GameEventProcessor:
         db: Session,
         preferences: GamePreferences,
     ):
-        self.session = GameStateMachine.new_session(
-            room_name, round_count=10, db=db, preferences=preferences
+        self.session = GameFactory.new_session(
+            room_name, db=db, preferences=preferences
         )
         self.event_mapping: Dict[Any, Reaction] = {
             PlayerSubmitCards.event_id(): Reaction(
@@ -41,7 +38,6 @@ class GameEventProcessor:
             ),
             SelectWinningSubmission.event_id(): Reaction(
                 event_callback=self.session.select_winner,
-                validation=self.winner_select_validation,
             ),
         }
 
@@ -49,23 +45,11 @@ class GameEventProcessor:
         if isinstance(event, PlayerSubmitCards):
             self.session.player_submit_card(event)
         if isinstance(event, SelectWinningSubmission):
-            self.winner_select_validation(event, sender_name)
-            self.session.select_winner(event)
+            self.session.select_winner(sender_name=sender_name, winner=event)
         self.session.save()
 
-    def winner_select_validation(self, event: GameEvent, sender_name: str):
-        tzars = [
-            p
-            for p in self.session.players
-            if p.current_role == CardsAgainstHumanityRoles.TZAR
-        ]
-        if len(tzars) != 1:
-            raise LogicalError(f"There should be only one tzar. Current tzars: {tzars}")
-
-        if tzars[0].username != sender_name:
-            raise LogicalError(
-                f"{sender_name} tried to select winner, but the tzar is {tzars[0]}"
-            )
+    def event_loop(self):
+        pass
 
 
 class GameEventMapper:
