@@ -230,13 +230,32 @@ class GameStateMachine(BaseModel):
             if card_count < CARDS_IN_PLAYER_HAND:
                 required_card_count = CARDS_IN_PLAYER_HAND - card_count
                 if required_card_count > len(self.white_cards):
-                    self.__finish_game("No more white cards left")
+                    break
                 white_cards_for_player = self.white_cards[0:required_card_count]
                 print(f"Adding cards to {p.username}=> {white_cards_for_player}")
                 p.cards_in_hand += white_cards_for_player
                 for c in white_cards_for_player:
                     self.white_cards.remove(c)
+
+        self._check_if_very_player_has_enough_cards(
+            self.players, active_pick=self.currently_active_card.pick
+        )
         self._elect_new_tzar()
+
+    @staticmethod
+    def _check_if_very_player_has_enough_cards(
+        players: List[CardsAgainstHumanityPlayer], active_pick: int
+    ):
+        """
+        Checks if every player has at least enough cards to play.
+        :param players: List of players.
+        :param active_pick: Active black card's pick count.
+        :return: None
+        :raises: GameHasEnded exception when the game cannot be played anymore.
+        """
+        min_cards_in_hand = min([len(player.cards_in_hand) for player in players])
+        if min_cards_in_hand < active_pick + 1:
+            raise GameHasEnded("Players ran out of cards!")
 
     def _elect_new_tzar(self):
         player = random.choice(

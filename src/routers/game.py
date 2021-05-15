@@ -25,6 +25,7 @@ from src.internal.cards_against_humanity_rules.models import (
     SelectWinningSubmission,
     GamePreferences,
     GameModes,
+    GameStates,
 )
 from src.websocket.connection_manager import ConnectionManager, SENDER_TYPES
 from src.websocket.models import WebSocketMessage
@@ -114,7 +115,9 @@ async def leave_game(
     if room is None:
         raise HTTPException(404, "Room does not exist.")
 
-    room.session.player_leaves(user.user_id)
+    # This kinda deserves a test:
+    if room.session.state != GameStates.FINISHED:
+        room.session.player_leaves(user.user_id)
     if len(room.session.players) == 0:
         game_mapper.end_game(room_name)
 
