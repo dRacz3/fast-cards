@@ -253,7 +253,7 @@ class GameStateMachine(BaseModel):
         :return: None
         :raises: GameHasEnded exception when the game cannot be played anymore.
         """
-        min_cards_in_hand = min(map(lambda player: len(player.cards_in_hand), players))
+        min_cards_in_hand = min([len(player.cards_in_hand) for player in players])
         if min_cards_in_hand < active_pick + 1:
             raise GameHasEnded("Players ran out of cards!")
 
