@@ -24,7 +24,8 @@ from src.internal.cards_against_humanity_rules.models import (
     PlayerSubmitCards,
     SelectWinningSubmission,
     GamePreferences,
-    GameModes, GameStates,
+    GameModes,
+    GameStates,
 )
 from src.websocket.connection_manager import ConnectionManager, SENDER_TYPES
 from src.websocket.models import WebSocketMessage

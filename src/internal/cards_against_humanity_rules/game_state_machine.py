@@ -237,11 +237,15 @@ class GameStateMachine(BaseModel):
                 for c in white_cards_for_player:
                     self.white_cards.remove(c)
 
-        self._check_if_very_player_has_enough_cards(self.players, active_pick= self.currently_active_card.pick)
+        self._check_if_very_player_has_enough_cards(
+            self.players, active_pick=self.currently_active_card.pick
+        )
         self._elect_new_tzar()
 
     @staticmethod
-    def _check_if_very_player_has_enough_cards(players : List[CardsAgainstHumanityPlayer], active_pick: int):
+    def _check_if_very_player_has_enough_cards(
+        players: List[CardsAgainstHumanityPlayer], active_pick: int
+    ):
         """
         Checks if every player has at least enough cards to play.
         :param players: List of players.
@@ -249,7 +253,7 @@ class GameStateMachine(BaseModel):
         :return: None
         :raises: GameHasEnded exception when the game cannot be played anymore.
         """
-        min_cards_in_hand = min(map(lambda player : len(player.cards_in_hand), players))
+        min_cards_in_hand = min(map(lambda player: len(player.cards_in_hand), players))
         if min_cards_in_hand < active_pick + 1:
             raise GameHasEnded("Players ran out of cards!")
 

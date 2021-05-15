@@ -302,7 +302,10 @@ def test_game_has_NOT_ended_when_ran_out_of_white_cards(default_game_with_3_play
         winner=SelectWinningSubmission(submission=winning_submission),
     )
 
-def test_game_has_ended_when_players_run_out_of_white_cards(default_game_with_3_players):
+
+def test_game_has_ended_when_players_run_out_of_white_cards(
+    default_game_with_3_players,
+):
     sess: GameStateMachine = default_game_with_3_players
 
     sess.start_game()
@@ -327,12 +330,13 @@ def test_game_has_ended_when_players_run_out_of_white_cards(default_game_with_3_
     the_winner_player: CardsAgainstHumanityPlayer = normal_players[0]
     winning_submission = the_winner_player.submissions[-1]
 
-    [(p.cards_in_hand.clear())  for p in sess.players]
+    [(p.cards_in_hand.clear()) for p in sess.players]
     with pytest.raises(GameHasEnded):
         sess.select_winner(
             sender_name=sess.tzar.username,
             winner=SelectWinningSubmission(submission=winning_submission),
         )
+
 
 def test_game_has_ended_when_player_reached_points_to_win(default_game_with_3_players):
     sess: GameStateMachine = default_game_with_3_players
