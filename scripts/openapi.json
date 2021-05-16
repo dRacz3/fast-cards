@@ -1163,7 +1163,8 @@
                 "title": "Room",
                 "required": [
                     "room_name",
-                    "player_count"
+                    "player_count",
+                    "state"
                 ],
                 "type": "object",
                 "properties": {
@@ -1174,6 +1175,10 @@
                     "player_count": {
                         "title": "Player Count",
                         "type": "integer"
+                    },
+                    "state": {
+                        "title": "State",
+                        "type": "string"
                     }
                 }
             },
