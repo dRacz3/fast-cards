@@ -46,7 +46,6 @@ class GameStateMachine(BaseModel):
     def logger(self):
         return logging.getLogger(f"room-[{self.room_name}]")
 
-
     @property
     def players(self) -> List[CardsAgainstHumanityPlayer]:
         return list(self.player_lookup.values())
@@ -238,7 +237,9 @@ class GameStateMachine(BaseModel):
                 if required_card_count > len(self.white_cards):
                     break
                 white_cards_for_player = self.white_cards[0:required_card_count]
-                self.logger.info(f"Adding cards to {p.username}=> {white_cards_for_player}")
+                self.logger.info(
+                    f"Adding cards to {p.username}=> {white_cards_for_player}"
+                )
                 p.cards_in_hand += white_cards_for_player
                 for c in white_cards_for_player:
                     self.white_cards.remove(c)

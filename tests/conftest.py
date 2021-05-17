@@ -1,3 +1,4 @@
+import os
 from typing import Any
 
 import pytest
@@ -111,3 +112,9 @@ def prefill_official_cards_to_database(database_connection):
         return
 
     yield _load
+
+
+def pytest_sessionfinish(session, exitstatus):
+    print("removing test db.")
+    if os.path.exists("test_sql_app.db"):
+        os.remove("test_sql_app.db")
