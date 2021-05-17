@@ -11,3 +11,4 @@ temp/
 *.pyc
 venv/
 Untitled.ipynb
+*-server.log

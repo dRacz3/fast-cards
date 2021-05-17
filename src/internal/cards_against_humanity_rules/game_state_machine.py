@@ -1,4 +1,5 @@
 import json
+import logging
 import os
 import random
 from typing import List, Optional, Dict, Union
@@ -42,6 +43,11 @@ class GameStateMachine(BaseModel):
     player_lookup: Dict[str, CardsAgainstHumanityPlayer] = Field(default_factory=dict)
 
     @property
+    def logger(self):
+        return logging.getLogger(f"room-[{self.room_name}]")
+
+
+    @property
     def players(self) -> List[CardsAgainstHumanityPlayer]:
         return list(self.player_lookup.values())
 
@@ -77,7 +83,7 @@ class GameStateMachine(BaseModel):
                 player_to_remove = p
 
         if self.tzar == player_to_remove:
-            print("The tzar is removed.. Starting a new round")
+            self.logger.info("The tzar is removed.. Starting a new round")
             self.__start_new_round()
         if player_to_remove is not None:
             self.player_lookup.pop(player_to_remove.username)
@@ -221,7 +227,7 @@ class GameStateMachine(BaseModel):
         if self.state == GameStates.FINISHED:
             return
         self.round_count += 1
-        print(f"Starting a new round #{self.round_count}")
+        self.logger.info(f"Starting a new round #{self.round_count}")
         self.state = GameStates.PLAYERS_SUBMITTING_CARDS
         self.player_submissions.clear()
         self.__next_active_black_card()
@@ -232,7 +238,7 @@ class GameStateMachine(BaseModel):
                 if required_card_count > len(self.white_cards):
                     break
                 white_cards_for_player = self.white_cards[0:required_card_count]
-                print(f"Adding cards to {p.username}=> {white_cards_for_player}")
+                self.logger.info(f"Adding cards to {p.username}=> {white_cards_for_player}")
                 p.cards_in_hand += white_cards_for_player
                 for c in white_cards_for_player:
                     self.white_cards.remove(c)
