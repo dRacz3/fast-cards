@@ -353,6 +353,50 @@
                         "JWTBearer": []
                     }
                 ]
+            },
+            "put": {
+                "tags": [
+                    "cards"
+                ],
+                "summary": "Create Deck",
+                "operationId": "create_deck_cards_deck_put",
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/DeckMetaData"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "responses": {
+                    "200": {
+                        "description": "Successful Response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/DeckMetaData"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validation Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/HTTPValidationError"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "JWTBearer": []
+                    }
+                ]
             }
         },
         "/game/new": {

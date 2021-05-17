@@ -7,10 +7,13 @@ from sqlalchemy.orm import Session
 from src.database import database_models
 from src.cards.models import WhiteCard, BlackCard, DeckMetaData
 
-logger = logging.getLogger('crud-ops')
+logger = logging.getLogger("crud-ops")
 
-def add_new_white_card(db: Session, card: WhiteCard) -> database_models.WhiteCard:
-    db_card = database_models.WhiteCard(**card.dict())
+
+def add_new_white_card(
+    db: Session, card: WhiteCard, source=None
+) -> database_models.WhiteCard:
+    db_card = database_models.WhiteCard(**card.dict(), source=source)
     db.add(db_card)
     db.commit()
     db.refresh(db_card)
@@ -29,8 +32,10 @@ def add_multiple_new_white_card(
     return db_cards
 
 
-def add_new_black_card(db: Session, card: BlackCard) -> database_models.BlackCard:
-    db_card = database_models.BlackCard(**card.dict())
+def add_new_black_card(
+    db: Session, card: BlackCard, source=None
+) -> database_models.BlackCard:
+    db_card = database_models.BlackCard(**card.dict(), source=source)
     db.add(db_card)
     db.commit()
     db.refresh(db_card)
@@ -38,8 +43,10 @@ def add_new_black_card(db: Session, card: BlackCard) -> database_models.BlackCar
     return db_card
 
 
-def add_new_deck(db: Session, deck: DeckMetaData) -> database_models.BlackCard:
-    db_deck = database_models.DeckMetaData(**deck.dict())
+def add_new_deck(
+    db: Session, deck: DeckMetaData, source=None
+) -> database_models.BlackCard:
+    db_deck = database_models.DeckMetaData(**deck.dict(), source=source)
     db.add(db_deck)
     db.commit()
     db.refresh(db_deck)
