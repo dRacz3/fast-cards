@@ -358,8 +358,8 @@
                 "tags": [
                     "cards"
                 ],
-                "summary": "Create Black Card",
-                "operationId": "create_black_card_cards_deck_put",
+                "summary": "Create Deck",
+                "operationId": "create_deck_cards_deck_put",
                 "requestBody": {
                     "content": {
                         "application/json": {
