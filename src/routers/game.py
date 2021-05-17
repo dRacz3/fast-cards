@@ -77,7 +77,18 @@ def create_new_game(
     if preferences is None:
         preferences = GamePreferences.default()
     print(f"Creating new room with preferences: {preferences}")
-    return game_mapper.new_game(room_name, db, preferences).session.dict()
+    try:
+        new_game = game_mapper.new_game(room_name, db, preferences).session.dict()
+        return new_game
+    except ValueError as e:
+        raise HTTPException(
+            status_code=409,
+            detail=f"Please select more decks, "
+            f"the selected decks alone "
+            f"do not contain enough cards for a proper game",
+        )
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Something went wrong : {e}")
 
 
 @router.post(f"/{GameEndpoints.JOIN}", response_model=GameStatePlayerView)
@@ -226,6 +237,7 @@ def refresh(
 class Room(BaseModel):
     room_name: str
     player_count: int
+    state : str
 
 
 class RoomListing(BaseModel):
@@ -236,7 +248,7 @@ class RoomListing(BaseModel):
 def list_rooms(game_mapper: GameEventMapper = Depends(get_game_mapper)):
     room = [g.session for g in game_mapper.mapping.values()]
     return RoomListing(
-        rooms=[Room(room_name=r.room_name, player_count=len(r.players)) for r in room]
+        rooms=[Room(room_name=r.room_name, player_count=len(r.players), state = r.state) for r in room]
     )
 
 
