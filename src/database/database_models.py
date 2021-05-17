@@ -20,6 +20,7 @@ class WhiteCard(Base):
     text = Column(String)
     icon = Column(String)
     deck = Column(String, index=True)
+    source = Column(String, default="LOADED")
 
 
 class BlackCard(Base):
@@ -31,6 +32,8 @@ class BlackCard(Base):
     deck = Column(String, index=True)
     pick = Column(Integer)
 
+    source = Column(String, default="LOADED")
+
 
 class DeckMetaData(Base):
     __tablename__ = "decks"
@@ -41,3 +44,4 @@ class DeckMetaData(Base):
     name = Column(String, unique=True)
     icon = Column(String)
     official = Column(Boolean)
+    source = Column(String, default="LOADED")

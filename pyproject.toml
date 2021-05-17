@@ -16,6 +16,7 @@ requests = "^2.25.1"
 jsonlines = "^2.0.0"
 passlib = "^1.7.4"
 broadcaster = {extras = ["redis"], version = "^0.2.0"}
+alembic = "^1.6.2"
 
 [tool.poetry.dev-dependencies]
 black = "^21.4b2"
