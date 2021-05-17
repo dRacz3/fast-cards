@@ -1,3 +1,4 @@
+import logging
 from dataclasses import dataclass, field
 from typing import List, Dict, Optional
 
@@ -16,24 +17,28 @@ class Room:
     connections: Dict[str, List[WebSocket]] = field(default_factory=dict)
     game_state_machine: Optional[GameStateMachine] = None
 
+    @property
+    def logger(self):
+        return logging.getLogger(f"room-[{self.room_name}]")
+
     def add_user_to_room(self, user: str, connection: WebSocket):
-        print(f"Trying to add user {user} to room")
+        self.logger.info(f"Trying to add user {user} to room")
         if user not in self.connections.keys():
             self.connections[user] = []
         self.connections[user].append(connection)
-        print(f"Added user {user} to room")
+        self.logger.info(f"Added user {user} to room")
 
     async def remove_user_from_room(self, user: str, connection: WebSocket):
-        print(f"Removed connection for user : {user} from room")
+        self.logger.info(f"Removed connection for user : {user} from room")
         try:
             await connection.close(code=status.WS_1001_GOING_AWAY)
         except Exception as e:
-            print(
+            self.logger.error(
                 f"{e} => Connection seems to be already closed. Maybe a user connected multiple times?"
             )
         self.connections[user].remove(connection)
         if len(self.connections[user]) == 0:
-            print(
+            self.logger.info(
                 f"No more user connections for this room {self.room_name} for user {user}, removing the user from room"
             )
             del self.connections[user]

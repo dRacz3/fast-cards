@@ -1,3 +1,4 @@
+import logging
 from typing import List, Optional
 
 from fastapi import APIRouter, HTTPException, Depends
@@ -36,11 +37,12 @@ router = APIRouter(
     tags=["cards-against"],
 )
 
+logger = logging.getLogger("game")
 
 async def broadcast_event(
     room_name: str, connection_manager: ConnectionManager, message: str
 ):
-    print(f"Broadcast attemt for : {room_name}->{message}")
+    logger.debug(f"Broadcast attempt for : {room_name}->{message}")
     if connection_manager.active_rooms.get(room_name) is not None:
         await connection_manager.broadcast(
             room_name=room_name,
@@ -48,7 +50,7 @@ async def broadcast_event(
                 message=message, sender=SENDER_TYPES.SYSTEM, topic=room_name
             ),
         )
-        print(f"BROADCASTED {room_name}->{message}")
+        logger.debug(f"BROADCASTED {room_name}->{message}")
 
 
 class GameEndpoints:
@@ -76,11 +78,12 @@ def create_new_game(
         raise HTTPException(403, "Room already exist.")
     if preferences is None:
         preferences = GamePreferences.default()
-    print(f"Creating new room with preferences: {preferences}")
+    logger.info(f"Creating new room with preferences: {preferences}")
     try:
         new_game = game_mapper.new_game(room_name, db, preferences).session.dict()
         return new_game
-    except ValueError as e:
+    except ValueError:
+        logger.error(f"User tried to start game, but not enough decks.")
         raise HTTPException(
             status_code=409,
             detail=f"Please select more decks, "

@@ -1,3 +1,4 @@
+import logging
 import random
 from typing import List, Optional
 
@@ -6,12 +7,14 @@ from sqlalchemy.orm import Session
 from src.database import database_models
 from src.cards.models import WhiteCard, BlackCard, DeckMetaData
 
+logger = logging.getLogger('crud-ops')
 
 def add_new_white_card(db: Session, card: WhiteCard) -> database_models.WhiteCard:
     db_card = database_models.WhiteCard(**card.dict())
     db.add(db_card)
     db.commit()
     db.refresh(db_card)
+    logger.info(f"Added {card} to database")
     return db_card
 
 
@@ -22,6 +25,7 @@ def add_multiple_new_white_card(
     db.add_all(db_cards)
     db.commit()
     [db.refresh(c) for c in db_cards]
+    logger.info(f"Added {cards} to database")
     return db_cards
 
 
@@ -30,6 +34,7 @@ def add_new_black_card(db: Session, card: BlackCard) -> database_models.BlackCar
     db.add(db_card)
     db.commit()
     db.refresh(db_card)
+    logger.info(f"Added {card} to database")
     return db_card
 
 
@@ -38,6 +43,7 @@ def add_new_deck(db: Session, deck: DeckMetaData) -> database_models.BlackCard:
     db.add(db_deck)
     db.commit()
     db.refresh(db_deck)
+    logger.info(f"Added {deck} to database")
     return db_deck
 
 
@@ -48,6 +54,7 @@ def add_multiple_new_black_card(
     db.add_all(db_cards)
     db.commit()
     [db.refresh(c) for c in db_cards]
+    logger.info(f"Added {cards} to database")
     return db_cards
 
 
@@ -111,6 +118,7 @@ def get_deck_list(db: Session) -> List[DeckMetaData]:
 
 
 def drop_all_cards(db: Session):
+    logger.warning(f"Dropping all cards in database")
     for c in db.query(database_models.WhiteCard).all():
         db.delete(c)
     for b in db.query(database_models.BlackCard).all():
