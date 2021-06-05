@@ -83,7 +83,7 @@ class GameStateMachine(BaseModel):
 
         if self.tzar == player_to_remove:
             self.logger.info("The tzar is removed.. Starting a new round")
-            self.__start_new_round()
+            self._start_new_round()
         if player_to_remove is not None:
             self.player_lookup.pop(player_to_remove.username)
 
@@ -198,8 +198,6 @@ class GameStateMachine(BaseModel):
             if game_has_ended:
                 self.__finish_game(game_end_reason)
 
-            self.__start_new_round()
-
             if len(self.last_winners) == len(winners):
                 return
             else:
@@ -222,7 +220,7 @@ class GameStateMachine(BaseModel):
         self.save()
         self.state = GameStates.TZAR_CHOOSING_WINNER
 
-    def __start_new_round(self):
+    def _start_new_round(self):
         if self.state == GameStates.FINISHED:
             return
         self.round_count += 1
@@ -248,6 +246,9 @@ class GameStateMachine(BaseModel):
             self.players, active_pick=self.currently_active_card.pick
         )
         self._elect_new_tzar()
+
+    def advance_after_voting(self):
+        self._start_new_round()
 
     @staticmethod
     def _check_if_very_player_has_enough_cards(

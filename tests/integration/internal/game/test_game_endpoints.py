@@ -73,6 +73,12 @@ class GameTestClient:
             json=winner.dict(),
         )
 
+    def advance(self):
+        return self.test_client.get(
+            f"/game/{GameEndpoints.ADVANCE_AFTER_VOTE}?room_name={self.room_name}",
+            headers=self.header,
+        )
+
 
 @pytest.fixture()
 def basic_game_setup_with_3_players(
@@ -229,6 +235,9 @@ def test_full_game(basic_game_setup_with_3_players):
             )
         )
     )
+
+    result = tzar_client.advance()
+    assert result.status_code == 200, "Advancing game should happened"
 
     view_after_winner_select = GameStatePlayerView(**tzar_client.refresh().json())
     assert view_after_winner_select.state == GameStates.PLAYERS_SUBMITTING_CARDS

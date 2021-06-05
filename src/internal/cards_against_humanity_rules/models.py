@@ -73,6 +73,12 @@ class SelectWinningSubmission(GameEvent):
         return self.__str__()
 
 
+class AdvanceRoundAfterVoting(GameEvent):
+    @staticmethod
+    def event_id() -> int:
+        return 3
+
+
 class CardsAgainstHumanityPlayer(BaseModel):
     username: str
     cards_in_hand: List[WhiteCard]

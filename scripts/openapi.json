@@ -780,6 +780,56 @@
                 ]
             }
         },
+        "/game/advance_voting": {
+            "get": {
+                "tags": [
+                    "cards-against"
+                ],
+                "summary": "Advance From Voting",
+                "operationId": "advance_from_voting_game_advance_voting_get",
+                "parameters": [
+                    {
+                        "required": true,
+                        "schema": {
+                            "title": "Room Name",
+                            "type": "string"
+                        },
+                        "name": "room_name",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful Response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/GameStatePlayerView"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validation Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/HTTPValidationError"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "JWTBearer": []
+                    },
+                    {
+                        "JWTBearer": []
+                    }
+                ]
+            }
+        },
         "/game/rooms": {
             "get": {
                 "tags": [

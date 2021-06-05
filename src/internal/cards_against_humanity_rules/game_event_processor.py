@@ -12,6 +12,7 @@ from src.internal.cards_against_humanity_rules.models import (
     GameEvent,
     PlayerSubmitCards,
     SelectWinningSubmission,
+    AdvanceRoundAfterVoting,
     GamePreferences,
 )
 
@@ -46,6 +47,8 @@ class GameEventProcessor:
             self.session.player_submit_card(event)
         if isinstance(event, SelectWinningSubmission):
             self.session.select_winner(sender_name=sender_name, winner=event)
+        if isinstance(event, AdvanceRoundAfterVoting):
+            self.session.advance_after_voting()
         self.session.save()
 
     def event_loop(self):

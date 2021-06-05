@@ -1,6 +1,9 @@
 from collections import Counter
 from typing import Optional, Dict, List, Tuple
 
+from src.internal.cards_against_humanity_rules.game_related_exceptions import (
+    InvalidPlayerAction,
+)
 from src.internal.cards_against_humanity_rules.game_state_machine import (
     GameStateMachine,
 )
@@ -8,6 +11,7 @@ from src.internal.cards_against_humanity_rules.models import (
     SelectWinningSubmission,
     CardsAgainstHumanityPlayer,
     GameModes,
+    GameStates,
 )
 
 
@@ -33,8 +37,6 @@ class GodIsDeadModeStateMachine(GameStateMachine):
             ]
             winning_subbmissions = [s[0] for s in winners]
             self._select_winner(winning_subbmissions)
-            self.winner_votes = {}
-            self.player_lookup[sender_name].votes = []
 
     def tzar(self) -> Optional[CardsAgainstHumanityPlayer]:
         return None
@@ -45,3 +47,17 @@ class GodIsDeadModeStateMachine(GameStateMachine):
     def _advance(self):
         if len(self.player_submissions.keys()) == len(self.players):
             self._close_round()
+
+    def advance_after_voting(self):
+        if self.state == GameStates.TZAR_CHOOSING_WINNER:
+            if len(self.winner_votes.keys()) == len(self.players):
+                self.winner_votes = {}
+                for players in self.player_lookup.values():
+                    players.votes = []
+                self._start_new_round()
+            else:
+                raise InvalidPlayerAction("Cannot advance if not everyone has voted!")
+        else:
+            raise InvalidPlayerAction(
+                f"Cannot advance using this step unless in state: {GameStates.TZAR_CHOOSING_WINNER}"
+            )
