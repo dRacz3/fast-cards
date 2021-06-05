@@ -52,8 +52,6 @@ class GameStateMachine(BaseModel):
 
     @property
     def tzar(self) -> Optional[CardsAgainstHumanityPlayer]:
-        # Untested
-        # Unused
         tzars = [
             p for p in self.players if p.current_role == CardsAgainstHumanityRoles.TZAR
         ]
@@ -75,6 +73,9 @@ class GameStateMachine(BaseModel):
 
             self.player_lookup[new_player.username] = new_player
 
+    def transit_state(self, next_state):
+        self.state = next_state
+
     def player_leaves(self, username: str):
         player_to_remove = None
         for p in self.players:
@@ -91,7 +92,7 @@ class GameStateMachine(BaseModel):
         if len(self.players) >= 2:
             self._elect_new_tzar()
             self.__next_active_black_card()
-            self.state = GameStates.PLAYERS_SUBMITTING_CARDS
+            self.transit_state(GameStates.PLAYERS_SUBMITTING_CARDS)
             self.save()
         else:
             raise InvalidPlayerAction(
@@ -194,7 +195,7 @@ class GameStateMachine(BaseModel):
                             game_has_ended = True
                             game_end_reason += f", {str(e)}"
             self.last_winners = last_winners
-
+            self.transit_state(GameStates.PLAYERS_INSPECTING_RESULT)
             if game_has_ended:
                 self.__finish_game(game_end_reason)
 
@@ -225,7 +226,7 @@ class GameStateMachine(BaseModel):
             return
         self.round_count += 1
         self.logger.info(f"Starting a new round #{self.round_count}")
-        self.state = GameStates.PLAYERS_SUBMITTING_CARDS
+        self.transit_state(GameStates.PLAYERS_SUBMITTING_CARDS)
         self.player_submissions.clear()
         self.__next_active_black_card()
         for p in self.players:
@@ -282,7 +283,7 @@ class GameStateMachine(BaseModel):
             p.revert_to_normal_player()
 
     def __finish_game(self, reason):
-        self.state = GameStates.FINISHED
+        self.transit_state(GameStates.FINISHED)
         raise GameHasEnded(reason)
 
     def save(self):

@@ -35,8 +35,8 @@ class GodIsDeadModeStateMachine(GameStateMachine):
             winners: List[Tuple[SelectWinningSubmission, int]] = [
                 c for c in winner_counter.items() if c[1] == max_vote_count
             ]
-            winning_subbmissions = [s[0] for s in winners]
-            self._select_winner(winning_subbmissions)
+            winning_submissions = [s[0] for s in winners]
+            self._select_winner(winning_submissions)
 
     def tzar(self) -> Optional[CardsAgainstHumanityPlayer]:
         return None
@@ -44,20 +44,18 @@ class GodIsDeadModeStateMachine(GameStateMachine):
     def _elect_new_tzar(self):
         pass
 
-    def _advance(self):
-        if len(self.player_submissions.keys()) == len(self.players):
-            self._close_round()
-
     def advance_after_voting(self):
-        if self.state == GameStates.TZAR_CHOOSING_WINNER:
-            if len(self.winner_votes.keys()) == len(self.players):
-                self.winner_votes = {}
-                for players in self.player_lookup.values():
-                    players.votes = []
-                self._start_new_round()
-            else:
-                raise InvalidPlayerAction("Cannot advance if not everyone has voted!")
+        if self.state == GameStates.PLAYERS_INSPECTING_RESULT:
+            self.winner_votes = {}
+            for players in self.player_lookup.values():
+                players.votes = []
+            self._start_new_round()
         else:
             raise InvalidPlayerAction(
-                f"Cannot advance using this step unless in state: {GameStates.TZAR_CHOOSING_WINNER}"
+                f"Cannot advance using this step unless in state: {GameStates.PLAYERS_INSPECTING_RESULT}"
             )
+
+    def _advance(self):
+        if len(self.player_submissions.keys()) == len(self.players) :
+            self._close_round()
+

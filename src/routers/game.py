@@ -254,7 +254,7 @@ def advance_from_voting(
         raise HTTPException(404, "Room does not exist.")
     if user.user_id not in room.session.player_lookup.keys():
         raise HTTPException(404, "User not in the game room.")
-    if room.session.state == GameStates.TZAR_CHOOSING_WINNER:
+    if room.session.state == GameStates.PLAYERS_INSPECTING_RESULT:
         room.on_new_event(AdvanceRoundAfterVoting(), user.user_id)
     else:
         raise HTTPException(400, "You can't do that in this game state.")
