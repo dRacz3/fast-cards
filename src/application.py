@@ -10,7 +10,7 @@ from src.config import get_settings
 def create_app() -> FastAPI:
     print(f"Creating app with settings: {get_settings()}")
     database_models.Base.metadata.create_all(bind=engine)
-    app = FastAPI(title="fast-cards", version="0.1.0")
+    app = FastAPI(title="fast-cards", version="0.2.0")
 
     origins = ["*"]
 

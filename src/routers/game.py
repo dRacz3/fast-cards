@@ -241,10 +241,11 @@ def refresh(
 
 
 @router.get(f"/{GameEndpoints.ADVANCE_AFTER_VOTE}", response_model=GameStatePlayerView)
-def advance_from_voting(
+async def advance_from_voting(
     room_name: str,
     game_mapper: GameEventMapper = Depends(get_game_mapper),
     token: str = Depends(JWTBearer()),
+    conman: ConnectionManager = Depends(get_websocket_connection_manager),
 ):
     user = decodeJWT(token)
     if user is None:
@@ -259,6 +260,11 @@ def advance_from_voting(
     else:
         raise HTTPException(400, "You can't do that in this game state.")
 
+    await broadcast_event(
+        room_name,
+        conman,
+        f"{user.user_id} has started a new round!",
+    )
     return GameStatePlayerView.from_game_state(room.session, user.user_id)
 
 
