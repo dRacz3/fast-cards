@@ -130,7 +130,7 @@ def test_game_starts_only_with_enough_players(
         else:
             assert p.points == 1
 
-    ### IMPLICITLY A NEW ROUND HAS STARTED ###
+    sess.advance_after_voting()
     new_tzars = [
         p for p in sess.players if p.current_role == CardsAgainstHumanityRoles.TZAR
     ]
@@ -265,11 +265,12 @@ def test_game_has_ended_when_ran_out_of_black_cards(default_game_with_3_players)
     the_winner_player: CardsAgainstHumanityPlayer = normal_players[0]
     winning_submission = the_winner_player.submissions[-1]
 
+    sess.select_winner(
+        sender_name=sess.tzar.username,
+        winner=SelectWinningSubmission(submission=winning_submission),
+    )
     with pytest.raises(GameHasEnded):
-        sess.select_winner(
-            sender_name=sess.tzar.username,
-            winner=SelectWinningSubmission(submission=winning_submission),
-        )
+        sess.advance_after_voting()
 
 
 def test_game_has_NOT_ended_when_ran_out_of_white_cards(default_game_with_3_players):
@@ -331,11 +332,13 @@ def test_game_has_ended_when_players_run_out_of_white_cards(
     winning_submission = the_winner_player.submissions[-1]
 
     [(p.cards_in_hand.clear()) for p in sess.players]
+
+    sess.select_winner(
+        sender_name=sess.tzar.username,
+        winner=SelectWinningSubmission(submission=winning_submission),
+    )
     with pytest.raises(GameHasEnded):
-        sess.select_winner(
-            sender_name=sess.tzar.username,
-            winner=SelectWinningSubmission(submission=winning_submission),
-        )
+        sess.advance_after_voting()
 
 
 def test_game_has_ended_when_player_reached_points_to_win(default_game_with_3_players):

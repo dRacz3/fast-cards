@@ -1,6 +1,9 @@
 from collections import Counter
 from typing import Optional, Dict, List, Tuple
 
+from src.internal.cards_against_humanity_rules.game_related_exceptions import (
+    InvalidPlayerAction,
+)
 from src.internal.cards_against_humanity_rules.game_state_machine import (
     GameStateMachine,
 )
@@ -8,6 +11,7 @@ from src.internal.cards_against_humanity_rules.models import (
     SelectWinningSubmission,
     CardsAgainstHumanityPlayer,
     GameModes,
+    GameStates,
 )
 
 
@@ -31,10 +35,8 @@ class GodIsDeadModeStateMachine(GameStateMachine):
             winners: List[Tuple[SelectWinningSubmission, int]] = [
                 c for c in winner_counter.items() if c[1] == max_vote_count
             ]
-            winning_subbmissions = [s[0] for s in winners]
-            self._select_winner(winning_subbmissions)
-            self.winner_votes = {}
-            self.player_lookup[sender_name].votes = []
+            winning_submissions = [s[0] for s in winners]
+            self._select_winner(winning_submissions)
 
     def tzar(self) -> Optional[CardsAgainstHumanityPlayer]:
         return None
@@ -42,6 +44,18 @@ class GodIsDeadModeStateMachine(GameStateMachine):
     def _elect_new_tzar(self):
         pass
 
+    def advance_after_voting(self):
+        if self.state == GameStates.PLAYERS_INSPECTING_RESULT:
+            self.winner_votes = {}
+            for players in self.player_lookup.values():
+                players.votes = []
+            self._start_new_round()
+        else:
+            raise InvalidPlayerAction(
+                f"Cannot advance using this step unless in state: {GameStates.PLAYERS_INSPECTING_RESULT}"
+            )
+
     def _advance(self):
-        if len(self.player_submissions.keys()) == len(self.players):
+        if len(self.player_submissions.keys()) == len(self.players) :
             self._close_round()
+

@@ -2,7 +2,7 @@
     "openapi": "3.0.2",
     "info": {
         "title": "fast-cards",
-        "version": "0.1.0"
+        "version": "0.2.0"
     },
     "paths": {
         "/auth/signup": {
@@ -737,6 +737,56 @@
                 ],
                 "summary": "Refresh",
                 "operationId": "refresh_game_refresh_get",
+                "parameters": [
+                    {
+                        "required": true,
+                        "schema": {
+                            "title": "Room Name",
+                            "type": "string"
+                        },
+                        "name": "room_name",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful Response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/GameStatePlayerView"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validation Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/HTTPValidationError"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "JWTBearer": []
+                    },
+                    {
+                        "JWTBearer": []
+                    }
+                ]
+            }
+        },
+        "/game/advance_voting": {
+            "get": {
+                "tags": [
+                    "cards-against"
+                ],
+                "summary": "Advance From Voting",
+                "operationId": "advance_from_voting_game_advance_voting_get",
                 "parameters": [
                     {
                         "required": true,

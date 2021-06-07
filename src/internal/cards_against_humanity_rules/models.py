@@ -20,8 +20,8 @@ class GameStates:
     STARTING = "STARTING"
     PLAYERS_SUBMITTING_CARDS = "PLAYERS_SUBMITTING_CARDS"
     TZAR_CHOOSING_WINNER = "TZAR_CHOOSING_WINNER"
+    PLAYERS_INSPECTING_RESULT = "PLAYERS_INSPECTING_RESULT"
     FINISHED = "FINISHED"
-
 
 class GameModes:
     NORMAL = "NORMAL"
@@ -71,6 +71,12 @@ class SelectWinningSubmission(GameEvent):
 
     def __repr__(self):
         return self.__str__()
+
+
+class AdvanceRoundAfterVoting(GameEvent):
+    @staticmethod
+    def event_id() -> int:
+        return 3
 
 
 class CardsAgainstHumanityPlayer(BaseModel):

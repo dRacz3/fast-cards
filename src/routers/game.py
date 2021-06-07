@@ -27,6 +27,7 @@ from src.internal.cards_against_humanity_rules.models import (
     GamePreferences,
     GameModes,
     GameStates,
+    AdvanceRoundAfterVoting,
 )
 from src.websocket.connection_manager import ConnectionManager, SENDER_TYPES
 from src.websocket.models import WebSocketMessage
@@ -62,6 +63,7 @@ class GameEndpoints:
     SELECTWINNER = "selectwinner"
     LEAVE = "leave"
     REFRESH = "refresh"
+    ADVANCE_AFTER_VOTE = "advance_voting"
 
 
 class LeaveResponse(BaseModel):
@@ -238,6 +240,34 @@ def refresh(
     return GameStatePlayerView.from_game_state(room.session, user.user_id)
 
 
+@router.get(f"/{GameEndpoints.ADVANCE_AFTER_VOTE}", response_model=GameStatePlayerView)
+async def advance_from_voting(
+    room_name: str,
+    game_mapper: GameEventMapper = Depends(get_game_mapper),
+    token: str = Depends(JWTBearer()),
+    conman: ConnectionManager = Depends(get_websocket_connection_manager),
+):
+    user = decodeJWT(token)
+    if user is None:
+        raise HTTPException(404, "User not found with this token.")
+    room = game_mapper.get_game(room_name)
+    if room is None:
+        raise HTTPException(404, "Room does not exist.")
+    if user.user_id not in room.session.player_lookup.keys():
+        raise HTTPException(404, "User not in the game room.")
+    if room.session.state == GameStates.PLAYERS_INSPECTING_RESULT:
+        room.on_new_event(AdvanceRoundAfterVoting(), user.user_id)
+    else:
+        raise HTTPException(400, "You can't do that in this game state.")
+
+    await broadcast_event(
+        room_name,
+        conman,
+        f"{user.user_id} has started a new round!",
+    )
+    return GameStatePlayerView.from_game_state(room.session, user.user_id)
+
+
 class Room(BaseModel):
     room_name: str
     player_count: int
@@ -251,6 +281,7 @@ class RoomListing(BaseModel):
 @router.get(f"/rooms", response_model=RoomListing)
 def list_rooms(game_mapper: GameEventMapper = Depends(get_game_mapper)):
     room = [g.session for g in game_mapper.mapping.values()]
+    room.reverse()
     return RoomListing(
         rooms=[
             Room(room_name=r.room_name, player_count=len(r.players), state=r.state)
