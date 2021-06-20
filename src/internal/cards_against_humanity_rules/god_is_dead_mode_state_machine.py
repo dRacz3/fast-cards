@@ -56,6 +56,5 @@ class GodIsDeadModeStateMachine(GameStateMachine):
             )
 
     def _advance(self):
-        if len(self.player_submissions.keys()) == len(self.players) :
+        if len(self.player_submissions.keys()) == len(self.players):
             self._close_round()
-
