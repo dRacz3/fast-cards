@@ -273,7 +273,7 @@ def test_game_has_ended_when_ran_out_of_black_cards(default_game_with_3_players)
         sess.advance_after_voting()
 
 
-def test_game_has_NOT_ended_when_ran_out_of_white_cards(default_game_with_3_players):
+def test_game_has_ended_when_ran_out_of_white_cards(default_game_with_3_players):
     sess: GameStateMachine = default_game_with_3_players
 
     sess.start_game()
@@ -303,40 +303,6 @@ def test_game_has_NOT_ended_when_ran_out_of_white_cards(default_game_with_3_play
         winner=SelectWinningSubmission(submission=winning_submission),
     )
 
-
-def test_game_has_ended_when_players_run_out_of_white_cards(
-    default_game_with_3_players,
-):
-    sess: GameStateMachine = default_game_with_3_players
-
-    sess.start_game()
-    assert sess.state == GameStates.PLAYERS_SUBMITTING_CARDS
-    sess.white_cards = [
-        sess.white_cards[-1]
-    ]  # Manually removing leftover white cards from session
-
-    normal_players = [
-        p for p in sess.players if p.current_role == CardsAgainstHumanityRoles.PLAYER
-    ]
-    active_card_picks = sess.currently_active_card.pick
-    for player in normal_players:
-        sess.player_submit_card(
-            PlayerSubmitCards(
-                submitting_user=player.username,
-                cards=player.cards_in_hand[0:active_card_picks],
-            )
-        )
-
-    assert sess.state == GameStates.TZAR_CHOOSING_WINNER
-    the_winner_player: CardsAgainstHumanityPlayer = normal_players[0]
-    winning_submission = the_winner_player.submissions[-1]
-
-    [(p.cards_in_hand.clear()) for p in sess.players]
-
-    sess.select_winner(
-        sender_name=sess.tzar.username,
-        winner=SelectWinningSubmission(submission=winning_submission),
-    )
     with pytest.raises(GameHasEnded):
         sess.advance_after_voting()
 
